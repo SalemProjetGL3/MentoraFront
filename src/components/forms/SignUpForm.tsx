@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ExclamationTriangleIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
+import api from '@/lib/axios_auth';
 
 interface SignUpFormProps {
   isSubmitting: boolean;
@@ -66,34 +67,15 @@ export default function SignUpForm({
     setIsSubmitting(true);
 
     try {
-      // Uncomment when backend is ready
-      /*
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: signUpData.name,
-          email: signUpData.email,
-          password: signUpData.password
-        }),
-      });
+      const RegistrationData = {
+        username: signUpData.name,
+        email: signUpData.email,
+        password: signUpData.password
+      };
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Sign up failed');
-      }
+      const response = await api.post('/auth/register', RegistrationData);
 
       setActiveTab("signin");
-      */
-
-      // Simulated delay and success
-      console.log("Sign up submitted:", signUpData);
-      setTimeout(() => {
-        setIsSubmitting(false);
-        setActiveTab("signin");
-        alert("Account created successfully (simulated)");
-      }, 1000);
     } catch (error) {
       setSignUpErrors((prev) => ({
         ...prev,

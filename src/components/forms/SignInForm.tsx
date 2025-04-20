@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { ExclamationTriangleIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import api from "@/lib/axios_auth";
 
 interface SignInFormProps {
   isSubmitting: boolean;
@@ -47,26 +48,23 @@ export default function SignInForm({
   };
 
   const handleSignInSubmit = async (e: React.FormEvent) => {
-    /* Backend integration example - uncomment and implement later
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    e.preventDefault();
+    
+    try {
+      const LoginData = {
         email: signInData.email,
         password: signInData.password
-        }),
-        credentials: 'include'
-    });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      };
+      
+      const response = await api.post('/auth/login', LoginData);
+      console.log('Login successful:', response.data);
+
+      window.location.href = '/dashboard';
+
+    } catch (error) {
+      setIsSubmitting(false);
+      alert('Login failed. Please check your credentials and try again.');
     }
-    
-    // Redirect on successful login
-    window.location.href = '/dashboard';
-    */
     
     e.preventDefault();
 
@@ -74,18 +72,6 @@ export default function SignInForm({
 
     setIsSubmitting(true);
     setFormError(null); // Clear previous form errors
-
-    try {
-      // Placeholder for real backend logic
-      console.log("Sign in submitted:", signInData);
-      setTimeout(() => {
-        setIsSubmitting(false);
-        alert("Sign in successful (simulated)");
-      }, 1000);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : "An unexpected error occurred");
-      setIsSubmitting(false);
-    }
   };
 
   return (
