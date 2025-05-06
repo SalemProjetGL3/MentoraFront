@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
-import { User, Lock, Bell, Globe, Shield, Trash2, Upload, Github, Linkedin } from "lucide-react"
+import { User, Lock, Bell, Globe, Shield, Trash2, Upload, Github, Linkedin, ShoppingCart, Crown, Sparkles, Star } from "lucide-react"
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -21,7 +21,7 @@ export default function ProfilePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simuler la sauvegarde
+    // Simulate saving
     setTimeout(() => {
       setIsLoading(false)
     }, 1500)
@@ -36,7 +36,7 @@ export default function ProfilePage() {
 
       <main className="flex-1 py-12">
         <div className="container px-4 md:px-6">
-          <h1 className="text-3xl font-bold tracking-tight mb-8">Mon Profil</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-8">My Profile</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8">
             <div className="space-y-6">
@@ -44,7 +44,7 @@ export default function ProfilePage() {
                 <div className="relative">
                   <Image
                     src="/placeholder.svg"
-                    alt="Photo de profil"
+                    alt="Profile picture"
                     width={120}
                     height={120}
                     className="rounded-full border-4 border-background"
@@ -54,20 +54,24 @@ export default function ProfilePage() {
                   </Button>
                 </div>
                 <div className="text-center">
-                  <h2 className="text-xl font-bold">Jean Dupont</h2>
-                  <p className="text-sm text-muted-foreground">jean.dupont@example.com</p>
+                  <h2 className="text-xl font-bold">John Doe</h2>
+                  <p className="text-sm text-muted-foreground">john.doe@example.com</p>
                 </div>
                 <div className="w-full space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Membre depuis</span>
-                    <span className="text-sm font-medium">Janvier 2023</span>
+                    <span className="text-sm">Member since</span>
+                    <span className="text-sm font-medium">January 2023</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Parcours terminés</span>
+                    <span className="text-sm">Points</span>
+                    <span className="text-sm font-medium text-mentora-blue">1,500</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Courses completed</span>
                     <span className="text-sm font-medium">2</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Badges obtenus</span>
+                    <span className="text-sm">Badges earned</span>
                     <span className="text-sm font-medium">4</span>
                   </div>
                 </div>
@@ -82,13 +86,13 @@ export default function ProfilePage() {
                     <Button variant="ghost" className="w-full justify-start" asChild>
                       <a href="#personal-info">
                         <User className="mr-2 h-4 w-4" />
-                        Informations personnelles
+                        Personal Information
                       </a>
                     </Button>
                     <Button variant="ghost" className="w-full justify-start" asChild>
                       <a href="#account-security">
                         <Lock className="mr-2 h-4 w-4" />
-                        Sécurité du compte
+                        Account Security
                       </a>
                     </Button>
                     <Button variant="ghost" className="w-full justify-start" asChild>
@@ -100,13 +104,19 @@ export default function ProfilePage() {
                     <Button variant="ghost" className="w-full justify-start" asChild>
                       <a href="#preferences">
                         <Globe className="mr-2 h-4 w-4" />
-                        Préférences
+                        Preferences
                       </a>
                     </Button>
                     <Button variant="ghost" className="w-full justify-start" asChild>
                       <a href="#connected-accounts">
                         <Shield className="mr-2 h-4 w-4" />
-                        Comptes connectés
+                        Connected Accounts
+                      </a>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start" asChild>
+                      <a href="#inventory">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Inventory
                       </a>
                     </Button>
                   </div>
@@ -118,45 +128,45 @@ export default function ProfilePage() {
               <div id="personal-info" className="border rounded-lg overflow-hidden">
                 <div className="bg-muted/50 p-4 flex items-center">
                   <User className="mr-2 h-5 w-5" />
-                  <h3 className="font-medium">Informations personnelles</h3>
+                  <h3 className="font-medium">Personal Information</h3>
                 </div>
                 <div className="p-6">
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="first-name">Prénom</Label>
-                        <Input id="first-name" defaultValue="Jean" />
+                        <Label htmlFor="first-name">First Name</Label>
+                        <Input id="first-name" defaultValue="John" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="last-name">Nom</Label>
-                        <Input id="last-name" defaultValue="Dupont" />
+                        <Label htmlFor="last-name">Last Name</Label>
+                        <Input id="last-name" defaultValue="Doe" />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" defaultValue="jean.dupont@example.com" />
+                      <Input id="email" type="email" defaultValue="john.doe@example.com" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="bio">Biographie</Label>
+                      <Label htmlFor="bio">Biography</Label>
                       <Textarea
                         id="bio"
-                        placeholder="Parlez-nous de vous..."
-                        defaultValue="Développeur web passionné par les nouvelles technologies et l'apprentissage continu."
+                        placeholder="Tell us about yourself..."
+                        defaultValue="Web developer passionate about new technologies and continuous learning."
                       />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="job-title">Titre professionnel</Label>
-                        <Input id="job-title" defaultValue="Développeur Frontend" />
+                        <Label htmlFor="job-title">Job Title</Label>
+                        <Input id="job-title" defaultValue="Frontend Developer" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="company">Entreprise / Organisation</Label>
+                        <Label htmlFor="company">Company / Organization</Label>
                         <Input id="company" defaultValue="Acme Inc." />
                       </div>
                     </div>
                     <div className="flex justify-end">
                       <Button type="submit" disabled={isLoading}>
-                        {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}
+                        {isLoading ? "Saving..." : "Save Changes"}
                       </Button>
                     </div>
                   </form>
@@ -166,38 +176,38 @@ export default function ProfilePage() {
               <div id="account-security" className="border rounded-lg overflow-hidden">
                 <div className="bg-muted/50 p-4 flex items-center">
                   <Lock className="mr-2 h-5 w-5" />
-                  <h3 className="font-medium">Sécurité du compte</h3>
+                  <h3 className="font-medium">Account Security</h3>
                 </div>
                 <div className="p-6">
                   <form className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="current-password">Mot de passe actuel</Label>
+                      <Label htmlFor="current-password">Current Password</Label>
                       <Input id="current-password" type="password" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                        <Label htmlFor="new-password">New Password</Label>
                         <Input id="new-password" type="password" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                        <Label htmlFor="confirm-password">Confirm Password</Label>
                         <Input id="confirm-password" type="password" />
                       </div>
                     </div>
                     <div className="flex justify-end">
-                      <Button type="submit">Mettre à jour le mot de passe</Button>
+                      <Button type="submit">Update Password</Button>
                     </div>
                   </form>
 
                   <Separator className="my-6" />
 
                   <div className="space-y-4">
-                    <h4 className="font-medium">Authentification à deux facteurs</h4>
+                    <h4 className="font-medium">Two-Factor Authentication</h4>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Activer l'authentification à deux facteurs</p>
+                        <p className="font-medium">Enable Two-Factor Authentication</p>
                         <p className="text-sm text-muted-foreground">
-                          Ajoutez une couche de sécurité supplémentaire à votre compte.
+                          Add an extra layer of security to your account.
                         </p>
                       </div>
                       <Switch />
@@ -215,36 +225,36 @@ export default function ProfilePage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Notifications par email</p>
+                        <p className="font-medium">Notifications by email</p>
                         <p className="text-sm text-muted-foreground">
-                          Recevez des emails concernant votre activité et vos parcours.
+                          Receive emails about your activity and courses.
                         </p>
                       </div>
                       <Switch defaultChecked />
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Notifications de nouveaux parcours</p>
+                        <p className="font-medium">Notifications of new courses</p>
                         <p className="text-sm text-muted-foreground">
-                          Soyez informé lorsque de nouveaux parcours sont disponibles.
+                          Be notified when new courses are available.
                         </p>
                       </div>
                       <Switch defaultChecked />
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Rappels d'apprentissage</p>
+                        <p className="font-medium">Learning reminders</p>
                         <p className="text-sm text-muted-foreground">
-                          Recevez des rappels pour continuer vos parcours en cours.
+                          Receive reminders to continue your ongoing courses.
                         </p>
                       </div>
                       <Switch defaultChecked />
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Newsletter mensuelle</p>
+                        <p className="font-medium">Monthly newsletter</p>
                         <p className="text-sm text-muted-foreground">
-                          Recevez notre newsletter avec des conseils et des actualités.
+                          Receive our newsletter with tips and updates.
                         </p>
                       </div>
                       <Switch />
@@ -256,40 +266,40 @@ export default function ProfilePage() {
               <div id="preferences" className="border rounded-lg overflow-hidden">
                 <div className="bg-muted/50 p-4 flex items-center">
                   <Globe className="mr-2 h-5 w-5" />
-                  <h3 className="font-medium">Préférences</h3>
+                  <h3 className="font-medium">Preferences</h3>
                 </div>
                 <div className="p-6">
                   <div className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="language">Langue</Label>
-                      <Select defaultValue="fr">
+                      <Label htmlFor="language">Language</Label>
+                      <Select defaultValue="en">
                         <SelectTrigger id="language">
-                          <SelectValue placeholder="Sélectionner une langue" />
+                          <SelectValue placeholder="Select a language" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="fr">Français</SelectItem>
                           <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="fr">French</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="theme">Thème</Label>
+                      <Label htmlFor="theme">Theme</Label>
                       <Select defaultValue="dark">
                         <SelectTrigger id="theme">
-                          <SelectValue placeholder="Sélectionner un thème" />
+                          <SelectValue placeholder="Select a theme" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="light">Clair</SelectItem>
-                          <SelectItem value="dark">Sombre</SelectItem>
-                          <SelectItem value="system">Système</SelectItem>
+                          <SelectItem value="light">Light</SelectItem>
+                          <SelectItem value="dark">Dark</SelectItem>
+                          <SelectItem value="system">System</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Lecture automatique des vidéos</p>
+                        <p className="font-medium">Automatic video playback</p>
                         <p className="text-sm text-muted-foreground">
-                          Lire automatiquement les vidéos dans les parcours.
+                          Automatically play videos in courses.
                         </p>
                       </div>
                       <Switch defaultChecked />
@@ -301,7 +311,7 @@ export default function ProfilePage() {
               <div id="connected-accounts" className="border rounded-lg overflow-hidden">
                 <div className="bg-muted/50 p-4 flex items-center">
                   <Shield className="mr-2 h-5 w-5" />
-                  <h3 className="font-medium">Comptes connectés</h3>
+                  <h3 className="font-medium">Connected Accounts</h3>
                 </div>
                 <div className="p-6">
                   <div className="space-y-4">
@@ -329,11 +339,11 @@ export default function ProfilePage() {
                         </div>
                         <div>
                           <p className="font-medium">Google</p>
-                          <p className="text-sm text-muted-foreground">jean.dupont@gmail.com</p>
+                          <p className="text-sm text-muted-foreground">john.doe@gmail.com</p>
                         </div>
                       </div>
                       <Button variant="outline" size="sm">
-                        Déconnecter
+                        Disconnect
                       </Button>
                     </div>
                     <div className="flex items-center justify-between">
@@ -347,7 +357,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                       <Button variant="outline" size="sm">
-                        Déconnecter
+                        Disconnect
                       </Button>
                     </div>
                     <div className="flex items-center justify-between">
@@ -357,11 +367,73 @@ export default function ProfilePage() {
                         </div>
                         <div>
                           <p className="font-medium">LinkedIn</p>
-                          <p className="text-sm text-muted-foreground">Non connecté</p>
+                          <p className="text-sm text-muted-foreground">Not connected</p>
                         </div>
                       </div>
                       <Button variant="outline" size="sm">
-                        Connecter
+                        Connect
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="inventory" className="border rounded-lg overflow-hidden">
+                <div className="bg-muted/50 p-4 flex items-center">
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  <h3 className="font-medium">Inventory</h3>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="border rounded-lg p-4">
+                      <div className="aspect-square relative mb-4">
+                        <img
+                          src="/placeholder.svg"
+                          alt="Golden Crown Frame"
+                          className="object-cover w-full h-full rounded-lg"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <Crown className="h-4 w-4 text-yellow-400" />
+                        </div>
+                      </div>
+                      <h4 className="font-medium mb-1">Golden Crown Frame</h4>
+                      <p className="text-sm text-muted-foreground mb-2">Equipped</p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Unequip
+                      </Button>
+                    </div>
+                    <div className="border rounded-lg p-4">
+                      <div className="aspect-square relative mb-4">
+                        <img
+                          src="/placeholder.svg"
+                          alt="Rainbow Sparkles"
+                          className="object-cover w-full h-full rounded-lg"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <Sparkles className="h-4 w-4 text-purple-400" />
+                        </div>
+                      </div>
+                      <h4 className="font-medium mb-1">Rainbow Sparkles</h4>
+                      <p className="text-sm text-muted-foreground mb-2">Not equipped</p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Equip
+                      </Button>
+                    </div>
+                    <div className="border rounded-lg p-4">
+                      <div className="aspect-square relative mb-4">
+                        <img
+                          src="/placeholder.svg"
+                          alt="Master Coder Badge"
+                          className="object-cover w-full h-full rounded-lg"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <Star className="h-4 w-4 text-blue-400" />
+                        </div>
+                      </div>
+                      <h4 className="font-medium mb-1">Master Coder Badge</h4>
+                      <p className="text-sm text-muted-foreground mb-2">Not equipped</p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Equip
                       </Button>
                     </div>
                   </div>
@@ -371,14 +443,13 @@ export default function ProfilePage() {
               <div className="border rounded-lg overflow-hidden">
                 <div className="bg-muted/50 p-4 flex items-center">
                   <Trash2 className="mr-2 h-5 w-5 text-destructive" />
-                  <h3 className="font-medium text-destructive">Supprimer le compte</h3>
+                  <h3 className="font-medium text-destructive">Delete Account</h3>
                 </div>
                 <div className="p-6">
                   <p className="text-sm text-muted-foreground mb-4">
-                    La suppression de votre compte est définitive et supprimera toutes vos données, y compris vos
-                    parcours, badges et certifications.
+                    Deleting your account is permanent and will remove all your data, including your courses, badges, and certifications.
                   </p>
-                  <Button variant="destructive">Supprimer mon compte</Button>
+                  <Button variant="destructive">Delete My Account</Button>
                 </div>
               </div>
             </div>
