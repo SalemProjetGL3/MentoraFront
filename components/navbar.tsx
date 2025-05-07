@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, X, BookOpen, Award, Home, LogOut, User } from "lucide-react"
+import { Menu, X, BookOpen, Award, Home, LogOut, User, Trophy, ShoppingCart } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 
@@ -28,25 +28,43 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/images/logo.png" alt="Mentora Logo" width={40} height={40} className="rounded-md" />
+          <div className="relative w-10 h-10">
+            <Image 
+              src="/images/logo.png" 
+              alt="Mentora Logo" 
+              fill
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+          </div>
           <span className="text-xl font-bold">MENTORA</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/" className="text-sm font-medium hover:text-primary/90 transition-colors">
-            Accueil
+            Home
           </Link>
           <Link href="/courses" className="text-sm font-medium hover:text-primary/90 transition-colors">
-            Parcours
+            Courses
           </Link>
           {isLoggedIn && (
             <Link href="/my-courses" className="text-sm font-medium hover:text-primary/90 transition-colors">
-              Mes Cours
+              My Courses
             </Link>
           )}
           {isLoggedIn && (
             <Link href="/badges" className="text-sm font-medium hover:text-primary/90 transition-colors">
               Badges
+            </Link>
+          )}
+          {isLoggedIn && (
+            <Link href="/leaderboard" className="text-sm font-medium hover:text-primary/90 transition-colors">
+              Leaderboard
+            </Link>
+          )}
+          {isLoggedIn && (
+            <Link href="/shop" className="text-sm font-medium hover:text-primary/90 transition-colors">
+              Shop
             </Link>
           )}
         </nav>
@@ -67,7 +85,7 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">Utilisateur</p>
+                    <p className="text-sm font-medium leading-none">User</p>
                     <p className="text-xs leading-none text-muted-foreground">user@example.com</p>
                   </div>
                 </DropdownMenuLabel>
@@ -75,13 +93,13 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
                     <User className="h-4 w-4" />
-                    <span>Mon Profil</span>
+                    <span>My Profile</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/my-courses" className="flex items-center gap-2 cursor-pointer">
                     <BookOpen className="h-4 w-4" />
-                    <span>Mes Cours</span>
+                    <span>My Courses</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -90,16 +108,28 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
                     <span>Badges</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/leaderboard" className="flex items-center gap-2 cursor-pointer">
+                    <Trophy className="h-4 w-4" />
+                    <span>Leaderboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/shop" className="flex items-center gap-2 cursor-pointer">
+                    <ShoppingCart className="h-4 w-4" />
+                    <span>Shop</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
                   <LogOut className="h-4 w-4" />
-                  <span>Déconnexion</span>
+                  <span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Button asChild variant="default">
-              <Link href="/login">Connexion</Link>
+              <Link href="/login">Login</Link>
             </Button>
           )}
 
@@ -118,7 +148,7 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
               onClick={() => setIsMenuOpen(false)}
             >
               <Home className="h-4 w-4" />
-              <span>Accueil</span>
+              <span>Home</span>
             </Link>
             <Link
               href="/courses"
@@ -126,7 +156,7 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
               onClick={() => setIsMenuOpen(false)}
             >
               <BookOpen className="h-4 w-4" />
-              <span>Parcours</span>
+              <span>Courses</span>
             </Link>
             {isLoggedIn && (
               <Link
@@ -135,7 +165,7 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <BookOpen className="h-4 w-4" />
-                <span>Mes Cours</span>
+                <span>My Courses</span>
               </Link>
             )}
             {isLoggedIn && (
@@ -146,6 +176,26 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
               >
                 <Award className="h-4 w-4" />
                 <span>Badges</span>
+              </Link>
+            )}
+            {isLoggedIn && (
+              <Link
+                href="/leaderboard"
+                className="flex items-center gap-2 text-sm font-medium hover:text-primary/90 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Trophy className="h-4 w-4" />
+                <span>Leaderboard</span>
+              </Link>
+            )}
+            {isLoggedIn && (
+              <Link
+                href="/shop"
+                className="flex items-center gap-2 text-sm font-medium hover:text-primary/90 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                <span>Shop</span>
               </Link>
             )}
           </nav>

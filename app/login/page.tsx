@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import axios from "axios"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,18 +13,163 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { Github, Linkedin } from "lucide-react"
+import { toast } from "sonner"
 
 export default function LoginPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    username: "",
+    confirmPassword: ""
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }))
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!mounted) return
+
     setIsLoading(true)
-    // Simulate login
-    setTimeout(() => {
+    
+    const apiUrl = process.env.NEXT_PUBLIC_AUTH_API_URL
+    
+    if (!apiUrl) {
+      toast.error("Configuration error. Please contact support.")
       setIsLoading(false)
-      window.location.href = "/courses"
-    }, 1500)
+      return
+    }
+
+    console.log('Login attempt with:', { email: formData.email })
+
+    try {
+      console.log('Making login API call to:', `${apiUrl}/login`)
+      const response = await axios.post(`${apiUrl}/login`, {
+        email: formData.email,
+        password: formData.password
+      })
+
+      console.log('Login API Response:', response.data)
+
+      
+      if (response.data.token) {
+        console.log('Login successful, storing token')
+        localStorage.setItem('token', response.data.token)
+        toast.success("Login successful!")
+        // Check if the error is related to unverified email
+        if (response.data.message &&response.data.message.includes("User is not verified")) {
+          await router.push("/email-verification")
+          return
+        }
+        await router.push("/courses")
+      }
+    } catch (error: any) {
+      console.error('Login Error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url,
+        apiUrl: process.env.NEXT_PUBLIC_AUTH_API_URL
+      })
+      
+      if (error.response) {
+        const errorMessage = error.response.data?.message || "Login failed. Please try again."
+        toast.error(errorMessage)
+      } else {
+        toast.error("Network error. Please check your connection.")
+      }
+    } finally {
+      setIsLoading(false)
+      console.log('Login process completed')
+    }
+  }
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!mounted) return
+    
+    if (formData.password !== formData.confirmPassword) {
+      console.warn('Password mismatch detected')
+      toast.error("Passwords do not match")
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_AUTH_API_URL
+      
+      if (!apiUrl) {
+        throw new Error('API URL is not configured. Please check your environment variables.')
+      }
+
+      const response = await axios.post(`${apiUrl}/register`, {
+        email: formData.email,
+        password: formData.password,
+        username: formData.username
+      })
+
+      console.log('Registration API Response:', response.data)
+
+      // Store email for verification page
+      localStorage.setItem('pendingVerificationEmail', formData.email)
+
+      console.log('Attempting to redirect to email-verification page...')
+      try {
+        await router.push('/email-verification')
+        console.log('Redirect successful')
+      } catch (redirectError) {
+        console.error('Redirect failed:', redirectError)
+        // Fallback to window.location if router.push fails
+        window.location.href = '/email-verification'
+      }
+
+      if (response.data.token) {
+        console.log('Registration successful, storing token')
+        localStorage.setItem('token', response.data.token)
+        toast.success("Registration successful! Please verify your email.")
+        
+        // Force a small delay to ensure the toast is visible
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        return
+      }
+    } catch (error: any) {
+      console.error('Registration Error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url,
+        apiUrl: process.env.NEXT_PUBLIC_AUTH_API_URL
+      })
+      
+      if (error.message.includes('API URL is not configured')) {
+        toast.error("Configuration error. Please contact support.")
+      } else if (error.response) {
+        toast.error(error.response.data?.message || "Registration failed. Please try again.")
+      } else {
+        toast.error("Network error. Please check your connection.")
+      }
+    } finally {
+      setIsLoading(false)
+      console.log('Registration process completed')
+    }
+  }
+
+  if (!mounted) {
+    return null
   }
 
   return (
@@ -37,35 +183,48 @@ export default function LoginPage() {
         <div className="container max-w-md px-4 md:px-6">
           <div className="flex flex-col space-y-2 text-center mb-8">
             <Image src="/images/logo.png" alt="Mentora Logo" width={80} height={80} className="mx-auto" />
-            <h1 className="text-2xl font-bold tracking-tight">Bienvenue sur MENTORA</h1>
-            <p className="text-sm text-muted-foreground">Connectez-vous pour accéder à vos parcours d'apprentissage</p>
+            <h1 className="text-2xl font-bold tracking-tight">Welcome to MENTORA</h1>
+            <p className="text-sm text-muted-foreground">Sign in to access your learning paths</p>
           </div>
 
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Connexion</TabsTrigger>
-              <TabsTrigger value="register">Inscription</TabsTrigger>
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <div className="space-y-4">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleLogin}>
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="exemple@email.com" required />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="example@email.com" 
+                        required 
+                        value={formData.email}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Mot de passe</Label>
+                        <Label htmlFor="password">Password</Label>
                         <Link href="#" className="text-xs text-muted-foreground hover:underline">
-                          Mot de passe oublié?
+                          Forgot password?
                         </Link>
                       </div>
-                      <Input id="password" type="password" required />
+                      <Input 
+                        id="password" 
+                        type="password" 
+                        required 
+                        value={formData.password}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Connexion en cours..." : "Se connecter"}
+                      {isLoading ? "Signing in..." : "Sign in"}
                     </Button>
                   </div>
                 </form>
@@ -75,7 +234,7 @@ export default function LoginPage() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Ou continuer avec</span>
+                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
                   </div>
                 </div>
 
@@ -115,32 +274,51 @@ export default function LoginPage() {
 
             <TabsContent value="register">
               <div className="space-y-4">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleRegister}>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="first-name">Prénom</Label>
-                        <Input id="first-name" placeholder="Jean" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="last-name">Nom</Label>
-                        <Input id="last-name" placeholder="Dupont" required />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="username">Username</Label>
+                      <Input 
+                        id="username" 
+                        placeholder="johndoe" 
+                        required 
+                        value={formData.username}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="exemple@email.com" required />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="example@email.com" 
+                        required 
+                        value={formData.email}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Mot de passe</Label>
-                      <Input id="password" type="password" required />
+                      <Label htmlFor="password">Password</Label>
+                      <Input 
+                        id="password" 
+                        type="password" 
+                        required 
+                        value={formData.password}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-                      <Input id="confirm-password" type="password" required />
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input 
+                        id="confirmPassword" 
+                        type="password" 
+                        required 
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Création du compte..." : "Créer un compte"}
+                      {isLoading ? "Creating account..." : "Create account"}
                     </Button>
                   </div>
                 </form>
@@ -150,7 +328,7 @@ export default function LoginPage() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Ou continuer avec</span>
+                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
                   </div>
                 </div>
 
@@ -190,13 +368,13 @@ export default function LoginPage() {
           </Tabs>
 
           <div className="mt-6 text-center text-sm">
-            En vous connectant, vous acceptez nos{" "}
+            By signing in, you agree to our{" "}
             <Link href="#" className="underline underline-offset-4 hover:text-primary">
-              Conditions d'utilisation
+              Terms of Service
             </Link>{" "}
-            et notre{" "}
+            and{" "}
             <Link href="#" className="underline underline-offset-4 hover:text-primary">
-              Politique de confidentialité
+              Privacy Policy
             </Link>
             .
           </div>

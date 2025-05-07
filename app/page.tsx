@@ -22,10 +22,10 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                    Apprenez les frameworks web de manière interactive
+                    Learn Web Frameworks Interactively
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Des parcours d'apprentissage structurés et progressifs pour maîtriser les frameworks web modernes.
+                    Structured and progressive learning paths to master modern web frameworks.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -34,10 +34,10 @@ export default function Home() {
                     size="lg"
                     className="bg-gradient-to-r from-mentora-blue to-mentora-purple hover:opacity-90"
                   >
-                    <Link href="/courses">Découvrir les parcours</Link>
+                    <Link href="/courses">Discover Courses</Link>
                   </Button>
                   <Button asChild variant="outline" size="lg">
-                    <Link href="/login">Commencer gratuitement</Link>
+                    <Link href="/login">Start Free</Link>
                   </Button>
                 </div>
               </div>
@@ -51,10 +51,10 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                  Une expérience d'apprentissage complète
+                  A Complete Learning Experience
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl">
-                  Mentora propose une approche pédagogique innovante pour maîtriser les frameworks web.
+                  Mentora offers an innovative pedagogical approach to master web frameworks.
                 </p>
               </div>
             </div>
@@ -63,54 +63,54 @@ export default function Home() {
                 <div className="rounded-full bg-primary/10 p-3">
                   <Video className="h-6 w-6 text-mentora-blue" />
                 </div>
-                <h3 className="text-xl font-bold">Contenus variés</h3>
+                <h3 className="text-xl font-bold">Diverse Content</h3>
                 <p className="text-center text-muted-foreground">
-                  Vidéos, textes, images et GIFs explicatifs pour un apprentissage complet.
+                  Videos, text, images, and explanatory GIFs for comprehensive learning.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-2 rounded-lg border p-6 bg-card shadow-sm">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Code className="h-6 w-6 text-mentora-green" />
                 </div>
-                <h3 className="text-xl font-bold">Environnement IDE</h3>
+                <h3 className="text-xl font-bold">IDE Environment</h3>
                 <p className="text-center text-muted-foreground">
-                  Exécutez du code directement dans le parcours pour une pratique immédiate.
+                  Run code directly in the course for immediate practice.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-2 rounded-lg border p-6 bg-card shadow-sm">
                 <div className="rounded-full bg-primary/10 p-3">
                   <CheckCircle className="h-6 w-6 text-mentora-orange" />
                 </div>
-                <h3 className="text-xl font-bold">Quiz et évaluations</h3>
+                <h3 className="text-xl font-bold">Quizzes and Assessments</h3>
                 <p className="text-center text-muted-foreground">
-                  Testez vos connaissances avec des quiz à la fin de chaque parcours.
+                  Test your knowledge with quizzes at the end of each course.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-2 rounded-lg border p-6 bg-card shadow-sm">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Award className="h-6 w-6 text-mentora-purple" />
                 </div>
-                <h3 className="text-xl font-bold">Badges et points</h3>
+                <h3 className="text-xl font-bold">Badges and Points</h3>
                 <p className="text-center text-muted-foreground">
-                  Gagnez des badges et des points pour chaque parcours achevé.
+                  Earn badges and points for each completed course.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-2 rounded-lg border p-6 bg-card shadow-sm">
                 <div className="rounded-full bg-primary/10 p-3">
                   <BookOpen className="h-6 w-6 text-mentora-blue" />
                 </div>
-                <h3 className="text-xl font-bold">Parcours structurés</h3>
+                <h3 className="text-xl font-bold">Structured Courses</h3>
                 <p className="text-center text-muted-foreground">
-                  Des modules organisés de manière progressive pour un apprentissage efficace.
+                  Progressively organized modules for effective learning.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-2 rounded-lg border p-6 bg-card shadow-sm">
                 <div className="rounded-full bg-primary/10 p-3">
                   <FileText className="h-6 w-6 text-mentora-green" />
                 </div>
-                <h3 className="text-xl font-bold">Suivi de progression</h3>
+                <h3 className="text-xl font-bold">Progress Tracking</h3>
                 <p className="text-center text-muted-foreground">
-                  Suivez votre avancement et consultez votre position dans les classements.
+                  Track your progress and check your position in the rankings.
                 </p>
               </div>
             </div>
@@ -122,33 +122,33 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Parcours populaires</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Popular Courses</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl">
-                  Découvrez nos parcours les plus suivis par la communauté.
+                  Discover our most followed courses by the community.
                 </p>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mt-12">
               {[
                 {
-                  title: "React.js Fondamentaux",
-                  description: "Maîtrisez les bases de React et créez vos premières applications.",
+                  title: "React.js Fundamentals",
+                  description: "Master the basics of React and create your first applications.",
                   modules: 8,
-                  level: "Débutant",
+                  level: "Beginner",
                   color: "blue",
                 },
                 {
-                  title: "Next.js Avancé",
-                  description: "Apprenez à créer des applications web performantes avec Next.js.",
+                  title: "Advanced Next.js",
+                  description: "Learn to create high-performance web applications with Next.js.",
                   modules: 10,
-                  level: "Intermédiaire",
+                  level: "Intermediate",
                   color: "purple",
                 },
                 {
-                  title: "Vue.js 3 Complet",
-                  description: "Découvrez Vue.js 3 et son écosystème de A à Z.",
+                  title: "Complete Vue.js 3",
+                  description: "Discover Vue.js 3 and its ecosystem from A to Z.",
                   modules: 12,
-                  level: "Tous niveaux",
+                  level: "All Levels",
                   color: "green",
                 },
               ].map((course, index) => (
@@ -169,9 +169,9 @@ export default function Home() {
                     <div className="mt-4 pt-4 border-t flex justify-between items-center">
                       <div className="flex items-center gap-1">
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">4.8k apprenants</span>
+                        <span className="text-sm text-muted-foreground">4.8k learners</span>
                       </div>
-                      <div className="text-sm font-medium">Voir le parcours →</div>
+                      <div className="text-sm font-medium">View Course →</div>
                     </div>
                   </div>
                 </Link>
@@ -179,7 +179,7 @@ export default function Home() {
             </div>
             <div className="flex justify-center mt-10">
               <Button asChild variant="outline" size="lg">
-                <Link href="/courses">Voir tous les parcours</Link>
+                <Link href="/courses">View All Courses</Link>
               </Button>
             </div>
           </div>
@@ -191,10 +191,10 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                  Prêt à commencer votre parcours ?
+                  Ready to Start Your Journey?
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl">
-                  Rejoignez des milliers d'apprenants et développez vos compétences en frameworks web dès aujourd'hui.
+                  Join thousands of learners and develop your web framework skills today.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
