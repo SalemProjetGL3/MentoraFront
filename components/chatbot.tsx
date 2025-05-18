@@ -29,53 +29,55 @@ export function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Connect to the WebSocket server
-    const socketConnection = io(chatbot_url);
-    setSocket(socketConnection);
+    if (isOpen && !socket) {
+      // Connect to the WebSocket server only when chat is opened
+      const socketConnection = io(chatbot_url);
+      setSocket(socketConnection);
 
-    // Handle incoming messages
-    socketConnection.on("response", (data: string) => {
-      console.log('=== Received WebSocket Response ===');
-      console.log('Raw response:', data);
-      setIsLoading(false);
-      try {
-        // Try to parse the response as JSON
-        const parsedData = JSON.parse(data);
-        console.log('Parsed JSON response:', parsedData);
-        setMessages((prev) => [
-          ...prev,
-          { text: parsedData.message || data, isUser: false },
-        ]);
-      } catch (error) {
-        // If parsing fails, use the raw data
-        console.log('Response was not JSON, using raw data');
-        console.log('Error parsing JSON:', error);
-        setMessages((prev) => [
-          ...prev,
-          { text: data, isUser: false },
-        ]);
-      }
-      console.log('=== End of Response ===');
-    });
+      // Handle incoming messages
+      socketConnection.on("response", (data: string) => {
+        console.log('=== Received WebSocket Response ===');
+        console.log('Raw response:', data);
+        setIsLoading(false);
+        try {
+          // Try to parse the response as JSON
+          const parsedData = JSON.parse(data);
+          console.log('Parsed JSON response:', parsedData);
+          setMessages((prev) => [
+            ...prev,
+            { text: parsedData.message || data, isUser: false },
+          ]);
+        } catch (error) {
+          // If parsing fails, use the raw data
+          console.log('Response was not JSON, using raw data');
+          console.log('Error parsing JSON:', error);
+          setMessages((prev) => [
+            ...prev,
+            { text: data, isUser: false },
+          ]);
+        }
+        console.log('=== End of Response ===');
+      });
 
-    // Handle connection events
-    socketConnection.on("connect", () => {
-      console.log('Connected to WebSocket server');
-    });
+      // Handle connection events
+      socketConnection.on("connect", () => {
+        console.log('Connected to WebSocket server');
+      });
 
-    socketConnection.on("disconnect", () => {
-      console.log('Disconnected from WebSocket server');
-    });
+      socketConnection.on("disconnect", () => {
+        console.log('Disconnected from WebSocket server');
+      });
 
-    socketConnection.on("error", (error) => {
-      console.error('WebSocket error:', error);
-    });
+      socketConnection.on("error", (error) => {
+        console.error('WebSocket error:', error);
+      });
 
-    return () => {
-      console.log('Cleaning up socket connection');
-      socketConnection.disconnect(); // Clean up on unmount
-    };
-  }, []);
+      return () => {
+        console.log('Cleaning up socket connection');
+        socketConnection.disconnect(); // Clean up on unmount
+      };
+    }
+  }, [isOpen, socket, chatbot_url]);
 
   const handleSendMessage = () => {
     if (!input.trim()) return;

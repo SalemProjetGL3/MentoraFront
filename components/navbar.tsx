@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -16,6 +17,7 @@ import {
 import { Menu, X, BookOpen, Award, Home, LogOut, User, Trophy, ShoppingCart } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
+import { useAuth } from "@/hooks/useAuth"
 
 interface NavbarProps {
   isLoggedIn?: boolean
@@ -23,6 +25,8 @@ interface NavbarProps {
 
 export function Navbar({ isLoggedIn = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const router = useRouter()
+  const { logout } = useAuth()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
@@ -121,7 +125,10 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <DropdownMenuItem 
+                  className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600"
+                  onClick={logout}
+                >
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -197,6 +204,18 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
                 <ShoppingCart className="h-4 w-4" />
                 <span>Shop</span>
               </Link>
+            )}
+            {isLoggedIn && (
+              <button
+                onClick={() => {
+                  logout()
+                  setIsMenuOpen(false)
+                }}
+                className="flex items-center gap-2 text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
             )}
           </nav>
         </div>

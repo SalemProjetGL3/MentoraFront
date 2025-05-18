@@ -15,43 +15,6 @@ export default function EmailVerificationPage() {
   const [isButtonDisabled, setIsButtonDisabled] = useState(true)
   const [hasResent, setHasResent] = useState(false)
 
-  // Initial email resend when page loads
-  useEffect(() => {
-    const sendInitialEmail = async () => {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        router.push('/404')
-        return
-      }
-
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_AUTH_API_URL
-        if (!apiUrl) {
-          throw new Error('API URL is not configured')
-        }
-
-        await axios.post(`${apiUrl}/resend-verification`, {}, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-        
-        setHasResent(true)
-        setIsButtonDisabled(true)
-        setCountdown(60)
-      } catch (error: any) {
-        console.error('Initial Resend Error:', error)
-        if (error.response?.status === 403) {
-          router.push('/404')
-        } else {
-          toast.error("Failed to send verification email. Please try again.")
-        }
-      }
-    }
-
-    sendInitialEmail()
-  }, [router])
-
   // Countdown timer
   useEffect(() => {
     let timer: NodeJS.Timeout
@@ -67,6 +30,7 @@ export default function EmailVerificationPage() {
     }
   }, [countdown])
 
+  // Handle Resend Email
   const handleResendEmail = async () => {
     if (isButtonDisabled || isResending) return
     
@@ -77,9 +41,9 @@ export default function EmailVerificationPage() {
         throw new Error('API URL is not configured')
       }
 
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('emailToken')
       if (!token) {
-        router.push('/404')
+        console.log('No token found')
         return
       }
 
@@ -98,7 +62,7 @@ export default function EmailVerificationPage() {
     } catch (error: any) {
       console.error('Resend Error:', error)
       if (error.response?.status === 403) {
-        router.push('/404')
+        console.log('403 error')
       } else {
         toast.error(error.response?.data?.message || "Failed to resend verification email. Please try again.")
       }
