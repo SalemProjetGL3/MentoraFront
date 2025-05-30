@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { PopupMessage } from '@/components/ui/popup-message';
+import Cookies from 'js-cookie';
 
 interface LoginFormProps {
   onLoadingChange: (loading: boolean) => void;
@@ -19,6 +20,10 @@ export function LoginForm({ onLoadingChange }: LoginFormProps) {
     email: '',
     password: '',
   });
+  const [popup, setPopup] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -36,7 +41,10 @@ export function LoginForm({ onLoadingChange }: LoginFormProps) {
     console.log(apiUrl);
     
     if (!apiUrl) {
-      toast.error("Configuration error. Please contact support.");
+      setPopup({
+        message: "Configuration error. Please contact support.",
+        type: 'error'
+      });
       onLoadingChange(false);
       return;
     }
@@ -54,65 +62,85 @@ export function LoginForm({ onLoadingChange }: LoginFormProps) {
         credentials: 'include'
       });
 
+      const data = await response.json();
+      console.log('Login response:', data);
+
+      if (data.error) {
+        setPopup({
+          message: "Login failed. Please try again.",
+          type: 'error'
+        });
+        return;
+      }
+
       if (response.ok) {
-        const data = await response.json();
-        if (data.message?.includes("User is not verified")) {
+        if (data.clientSideToken) {
           localStorage.setItem('emailToken', data.clientSideToken);
           await router.push("/email-verification");
           return;
         }
-        if (data.token) {
-          localStorage.setItem('token', data.token);
-          toast.success("Login successful!");
-          
+        else if (data.token) {
+          // Store token in localStorage
+          localStorage.setItem('token', 'true');
           await router.push("/courses");
         }
       } else {
-        toast.error("Login failed. Please try again.");
+        setPopup({
+          message: "Login failed. Please try again.",
+          type: 'error'
+        });
       }
     } catch (error: any) {
-      if (error.response) {
-        const errorMessage = error.response.data?.message || "Login failed. Please try again.";
-        toast.error(errorMessage);
-      } else {
-        toast.error("Network error. Please check your connection.");
-      }
+      console.error('Login error:', error);
+      setPopup({
+        message: "Login failed. Please try again.",
+        type: 'error'
+      });
     } finally {
       onLoadingChange(false);
     }
   };
 
   return (
-    <form onSubmit={handleLogin} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input 
-          id="email" 
-          type="email" 
-          placeholder="example@email.com" 
-          required 
-          value={formData.email}
-          onChange={handleInputChange}
+    <>
+      {popup && (
+        <PopupMessage
+          message={popup.message}
+          type={popup.type}
+          onClose={() => setPopup(null)}
         />
-      </div>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
-          <Link href="#" className="text-xs text-muted-foreground hover:underline">
-            Forgot password?
-          </Link>
+      )}
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input 
+            id="email" 
+            type="email" 
+            placeholder="example@email.com" 
+            required 
+            value={formData.email}
+            onChange={handleInputChange}
+          />
         </div>
-        <Input 
-          id="password" 
-          type="password" 
-          required 
-          value={formData.password}
-          onChange={handleInputChange}
-        />
-      </div>
-      <Button type="submit" className="w-full">
-        Sign in
-      </Button>
-    </form>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            <Link href="#" className="text-xs text-muted-foreground hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+          <Input 
+            id="password" 
+            type="password" 
+            required 
+            value={formData.password}
+            onChange={handleInputChange}
+          />
+        </div>
+        <Button type="submit" className="w-full">
+          Sign in
+        </Button>
+      </form>
+    </>
   );
 } 

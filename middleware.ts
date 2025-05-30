@@ -10,8 +10,7 @@ const protectedRoutes = [
   '/my-courses',
   '/badges',
   '/leaderboard',
-  '/shop',
-  '/courses'
+  '/shop'
 ]
 
 export function middleware(request: NextRequest) {
@@ -34,7 +33,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  return NextResponse.next()
+  // If we have a token in the authorization header, add it to the response headers
+  // This ensures the token is available to the client
+  const response = NextResponse.next()
+  if (token && !request.cookies.get('token')) {
+    response.headers.set('x-auth-token', token)
+  }
+
+  return response
 }
 
 // Configure which routes to run middleware on

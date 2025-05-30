@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [verifying, setVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const token = searchParams.get('token');
@@ -28,22 +29,37 @@ export default function VerifyEmailPage() {
       return;
     }
 
-    // Here you would typically make an API call to verify the email
-    // For now, we'll just simulate a delay
     const verifyEmail = async () => {
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/verify-email?token=${token}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // This is important for cookies
+        });
+
+        if (!response.ok) {
+          throw new Error('Verification failed');
+        }
+
+        const data = await response.json();
+        
+        // The token will be automatically stored in the HTTP-only cookie by the server
+        // No need to manually store it in localStorage
+        
         // Redirect to success page
-        window.location.href = '/verify-email/success';
+        router.push('/verify-email/success');
       } catch (err) {
         setError('Failed to verify email. Please try again.');
         setVerifying(false);
+        // Redirect to fail page
+        router.push('/verify-email/fail');
       }
     };
 
     verifyEmail();
-  }, [token]);
+  }, [token, router]);
 
   if (error) {
     return (
@@ -56,9 +72,6 @@ export default function VerifyEmailPage() {
           <CardContent>
             <div className="flex flex-col gap-4">
               <Button asChild>
-                <Link href="/resend-verification">Resend Verification Email</Link>
-              </Button>
-              <Button variant="outline" asChild>
                 <Link href="/">Return to Home</Link>
               </Button>
             </div>

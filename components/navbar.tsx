@@ -17,7 +17,7 @@ import {
 import { Menu, X, BookOpen, Award, Home, LogOut, User, Trophy, ShoppingCart } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
-import { useAuth } from "@/hooks/useAuth"
+import { toast } from "sonner"
 
 interface NavbarProps {
   isLoggedIn?: boolean
@@ -26,7 +26,38 @@ interface NavbarProps {
 export function Navbar({ isLoggedIn = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
-  const { logout } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_AUTH_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL not configured');
+      }
+
+      // Call logout endpoint
+      const response = await fetch(`${apiUrl}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+
+      // Clear frontend state
+      localStorage.removeItem('token');
+      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
+      toast.success("Logged out successfully");
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error("Failed to logout. Please try again.");
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
@@ -127,7 +158,7 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600"
-                  onClick={logout}
+                  onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
@@ -208,8 +239,8 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
             {isLoggedIn && (
               <button
                 onClick={() => {
-                  logout()
-                  setIsMenuOpen(false)
+                  handleLogout();
+                  setIsMenuOpen(false);
                 }}
                 className="flex items-center gap-2 text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
               >

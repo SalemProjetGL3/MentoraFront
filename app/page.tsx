@@ -1,16 +1,34 @@
 'use client'
 
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { BookOpen, Award, CheckCircle, Code, Video, FileText } from "lucide-react"
-import { useAuth } from "@/hooks/useAuth"
 
 export default function Home() {
   const router = useRouter()
-  const { user } = useAuth()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userName, setUserName] = useState("")
+
+  useEffect(() => {
+    // Check if user is logged in by looking for token
+    const token = localStorage.getItem('token')
+    setIsLoggedIn(!!token)
+    
+    // Get user info from localStorage if available
+    const userInfo = localStorage.getItem('userInfo')
+    if (userInfo) {
+      try {
+        const { name } = JSON.parse(userInfo)
+        setUserName(name)
+      } catch (error) {
+        console.error('Error parsing user info:', error)
+      }
+    }
+  }, [])
 
   const handleLogin = () => {
     console.log('Navigating to login page...')
@@ -24,7 +42,7 @@ export default function Home() {
       <div className="blob blob-green"></div>
       <div className="blob blob-purple"></div>
 
-      <Navbar isLoggedIn={!!user} />
+      <Navbar isLoggedIn={isLoggedIn} />
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -34,16 +52,16 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                    {user ? `Welcome back, ${user.name}!` : 'Learn Web Frameworks Interactively'}
+                    {isLoggedIn ? `Welcome back, ${userName}!` : 'Learn Web Frameworks Interactively'}
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    {user 
+                    {isLoggedIn 
                       ? "Continue your learning journey with our structured courses."
                       : "Structured and progressive learning paths to master modern web frameworks."}
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  {user ? (
+                  {isLoggedIn ? (
                     <>
                       <Button
                         asChild
@@ -249,7 +267,7 @@ export default function Home() {
                   variant="outline" 
                   size="lg"
                 >
-                  <a href="/courses">Explore Courses</a>
+                  <Link href="/courses">Browse Courses</Link>
                 </Button>
               </div>
             </div>

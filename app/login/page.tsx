@@ -9,48 +9,90 @@ import { RegisterForm } from './components/register-form';
 import { SocialLogin } from './components/social-login';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Icons } from "@/components/icons"
-import { toast } from "sonner"
-import { useAuth } from "@/hooks/useAuth"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useAuth()
   const from = searchParams.get('from') || '/'
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
 
   useEffect(() => {
     setMounted(true);
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/check', {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        // User is authenticated, redirect to the original destination or home
+        router.push(from);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    }
+  };
 
   if (!mounted) {
     return null;
   }
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsLoading(true)
-
-    const formData = new FormData(event.currentTarget)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      await login(email, password)
-      toast.success("Login successful!")
-      router.push(from)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+        credentials: 'include', // This is important for cookies
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      
+      // The token will be automatically stored in the HTTP-only cookie by the server
+      // No need to manually store it in localStorage
+      
+      toast.success('Login successful!');
+      
+      // Redirect to the original destination or home
+      router.push(from);
     } catch (error) {
-      toast.error("Invalid email or password")
+      toast.error('Invalid email or password');
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
 
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -83,39 +125,44 @@ export default function LoginPage() {
                       Enter your email and password to sign in to your account
                     </CardDescription>
                   </CardHeader>
-                  <form onSubmit={onSubmit}>
-                    <CardContent className="grid gap-4">
-                      <div className="grid gap-2">
+                  <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
                           id="email"
                           name="email"
                           type="email"
-                          placeholder="name@example.com"
+                          placeholder="Enter your email"
+                          value={formData.email}
+                          onChange={handleChange}
                           required
-                          disabled={isLoading}
                         />
                       </div>
-                      <div className="grid gap-2">
+                      <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
                         <Input
                           id="password"
                           name="password"
                           type="password"
+                          placeholder="Enter your password"
+                          value={formData.password}
+                          onChange={handleChange}
                           required
-                          disabled={isLoading}
                         />
                       </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button className="w-full" type="submit" disabled={isLoading}>
-                        {isLoading && (
-                          <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                      <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Logging in...
+                          </>
+                        ) : (
+                          'Login'
                         )}
-                        Sign In
                       </Button>
-                    </CardFooter>
-                  </form>
+                    </form>
+                  </CardContent>
                 </Card>
                 <SocialLogin />
               </div>
