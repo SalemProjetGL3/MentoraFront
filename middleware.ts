@@ -15,7 +15,6 @@ const protectedRoutes = [
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value
-  console.log('Token:', token)
   const { pathname } = request.nextUrl
 
   // Check if the route is protected

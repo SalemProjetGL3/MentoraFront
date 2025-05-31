@@ -106,6 +106,11 @@ export function Navbar() {
               Shop
             </Link>
           )}
+          {isLoggedIn && (
+            <Link href="/users" className="text-sm font-medium hover:text-primary/90 transition-colors">
+              Users
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -157,6 +162,12 @@ export function Navbar() {
                   <Link href="/shop" className="flex items-center gap-2 cursor-pointer">
                     <ShoppingCart className="h-4 w-4" />
                     <span>Shop</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/users" className="flex items-center gap-2 cursor-pointer">
+                    <User className="h-4 w-4" />
+                    <span>Users</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -238,6 +249,16 @@ export function Navbar() {
               >
                 <ShoppingCart className="h-4 w-4" />
                 <span>Shop</span>
+              </Link>
+            )}
+            {isLoggedIn && (
+              <Link
+                href="/users"
+                className="flex items-center gap-2 text-sm font-medium hover:text-primary/90 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User className="h-4 w-4" />
+                <span>Users</span>
               </Link>
             )}
             {isLoggedIn && (

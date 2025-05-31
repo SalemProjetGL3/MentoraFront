@@ -36,7 +36,7 @@ export default function VerifyEmailPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // This is important for cookies
+          credentials: 'include', 
         });
 
         if (!response.ok) {
