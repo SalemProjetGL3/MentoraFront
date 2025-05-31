@@ -83,7 +83,7 @@ export default function CoursesPage() {
       <div className="blob blob-blue"></div>
       <div className="blob blob-orange"></div>
 
-      <Navbar isLoggedIn={true} />
+      <Navbar />
 
       <main className="flex-1 py-12">
         <div className="container px-4 md:px-6">

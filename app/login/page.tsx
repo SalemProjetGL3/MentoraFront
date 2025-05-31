@@ -21,24 +21,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     setMounted(true);
-    checkAuth();
   }, []);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth/check', {
-        method: 'GET',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        // User is authenticated, redirect to the original destination or home
-        router.push(from);
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    }
-  };
 
   if (!mounted) {
     return null;

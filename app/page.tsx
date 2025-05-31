@@ -11,23 +11,12 @@ import { BookOpen, Award, CheckCircle, Code, Video, FileText } from "lucide-reac
 export default function Home() {
   const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userName, setUserName] = useState("")
+  const [userName] = useState("")
 
   useEffect(() => {
     // Check if user is logged in by looking for token
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
-    
-    // Get user info from localStorage if available
-    const userInfo = localStorage.getItem('userInfo')
-    if (userInfo) {
-      try {
-        const { name } = JSON.parse(userInfo)
-        setUserName(name)
-      } catch (error) {
-        console.error('Error parsing user info:', error)
-      }
-    }
   }, [])
 
   const handleLogin = () => {
@@ -42,7 +31,7 @@ export default function Home() {
       <div className="blob blob-green"></div>
       <div className="blob blob-purple"></div>
 
-      <Navbar isLoggedIn={isLoggedIn} />
+      <Navbar />
 
       <main className="flex-1">
         {/* Hero Section */}

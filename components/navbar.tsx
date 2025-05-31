@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -19,13 +19,16 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { toast } from "sonner"
 
-interface NavbarProps {
-  isLoggedIn?: boolean
-}
-
-export function Navbar({ isLoggedIn = false }: NavbarProps) {
+export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    // Check if user is logged in by looking for token
+    const token = localStorage.getItem('token')
+    setIsLoggedIn(!!token)
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -50,6 +53,7 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
       // Clear frontend state
       localStorage.removeItem('token');
       document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      setIsLoggedIn(false);
       
       toast.success("Logged out successfully");
       router.push('/');
