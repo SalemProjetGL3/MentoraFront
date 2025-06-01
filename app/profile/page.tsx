@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,23 +13,51 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { User, Lock, Bell, Globe, Shield, Trash2, Upload, Github, Linkedin, ShoppingCart, Crown, Sparkles, Star } from "lucide-react"
+import { api, UserProfile } from "@/lib/api";
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    // Simulate saving
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 1500)
-  }
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  return (
-    <div className="relative min-h-screen flex flex-col">
-      <div className="blob blob-blue"></div>
-      <div className="blob blob-purple"></div>
+useEffect(() => {
+  api.getUserProfile().then(setProfile);
+}, []);
+
+const [formProfile, setFormProfile] = useState<Partial<UserProfile>>({})
+useEffect(() => {
+  api.getUserProfile().then((data) => {
+    setProfile(data)
+    setFormProfile(data) 
+  })
+}, [])
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsLoading(true)
+  try {
+    if (formProfile.id) { 
+      const updated = await api.updateUserProfile(formProfile as UserProfile)
+      setProfile(updated)       
+      setFormProfile(updated)   
+    }
+  } finally {
+    setIsLoading(false)
+  }
+}
+
+// Add this handler for input changes
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const { id, value } = e.target;
+  setFormProfile((prev) => ({
+    ...prev,
+    [id]: value,
+  }));
+};
+
+return (
+  <div className="relative min-h-screen flex flex-col">
+    <div className="blob blob-blue"></div>
+    <div className="blob blob-purple"></div>
 
       <Navbar isLoggedIn={true} />
 
@@ -54,8 +81,8 @@ export default function ProfilePage() {
                   </Button>
                 </div>
                 <div className="text-center">
-                  <h2 className="text-xl font-bold">John Doe</h2>
-                  <p className="text-sm text-muted-foreground">john.doe@example.com</p>
+                  <h2 className="text-xl font-bold">{profile?.firstName} {profile?.lastName}</h2>
+                  <p className="text-sm text-muted-foreground">{profile?.email}</p>
                 </div>
                 <div className="w-full space-y-2">
                   <div className="flex items-center justify-between">
@@ -135,33 +162,30 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="first-name">First Name</Label>
-                        <Input id="first-name" defaultValue="John" />
+                        <Input id="firstName" value={formProfile.firstName || ""} onChange={handleInputChange} />
+
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="last-name">Last Name</Label>
-                        <Input id="last-name" defaultValue="Doe" />
+                        <Input id="lastName" value={formProfile.lastName || ""} onChange={handleInputChange} />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" defaultValue="john.doe@example.com" />
+                      <Input id="email" value={formProfile.email || ""} onChange={handleInputChange} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="bio">Biography</Label>
-                      <Textarea
-                        id="bio"
-                        placeholder="Tell us about yourself..."
-                        defaultValue="Web developer passionate about new technologies and continuous learning."
-                      />
+                     <Textarea id="bio" value={formProfile.bio || ""} onChange={handleInputChange} />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="job-title">Job Title</Label>
-                        <Input id="job-title" defaultValue="Frontend Developer" />
+                        <Input id="jobTitle" value={formProfile.jobTitle || ""} onChange={handleInputChange} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="company">Company / Organization</Label>
-                        <Input id="company" defaultValue="Acme Inc." />
+                        <Input id="company" value={formProfile.company || ""} onChange={handleInputChange} />
                       </div>
                     </div>
                     <div className="flex justify-end">
@@ -179,7 +203,7 @@ export default function ProfilePage() {
                   <h3 className="font-medium">Account Security</h3>
                 </div>
                 <div className="p-6">
-                  <form className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="current-password">Current Password</Label>
                       <Input id="current-password" type="password" />
