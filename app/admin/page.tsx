@@ -27,7 +27,7 @@ import { PlusCircle, MinusCircle, CheckCircle2, XCircle, Loader2 } from "lucide-
 import { toast } from "sonner"
 import { Navbar } from "@/components/navbar" // Assuming you want Navbar here too
 import { Chatbot } from "@/components/chatbot" // Assuming you want Chatbot here too
-export const BASE_URL = "http://localhost:3000"
+export const BASE_URL = "http://localhost:3006"
 // --- Interfaces (Copy from your API documentation or define as needed) ---
 interface Answer {
   text: string

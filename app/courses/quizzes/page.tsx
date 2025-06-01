@@ -27,7 +27,7 @@ export default function QuizzesListPage() {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const response = await fetch('http://localhost:3000/quizzes') // API endpoint remains the same
+        const response = await fetch('http://localhost:3006/quizzes') // API endpoint remains the same
         if (!response.ok) {
           throw new Error('Failed to fetch quizzes')
         }
