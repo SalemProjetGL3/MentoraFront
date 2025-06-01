@@ -12,6 +12,7 @@ import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { CheckCircle2, XCircle, Timer, Trophy, ArrowRight, ChevronLeft, BarChart } from "lucide-react"
 import { toast } from "sonner"
+import React from 'react'
 
 interface Answer {
   _id: string
