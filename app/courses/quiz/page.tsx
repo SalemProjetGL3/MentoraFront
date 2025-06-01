@@ -11,40 +11,9 @@ import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { CheckCircle2, XCircle, Timer, Trophy, ArrowRight, ChevronLeft, BarChart } from "lucide-react"
 import { toast } from "sonner"
+import { Quiz, Answer, QuizSubmission, Question } from "../types/quiz"
 
-interface Answer {
-  _id: string
-  text: string
-  isCorrect: boolean
-}
 
-interface Question {
-  _id: string
-  text: string
-  type: 'single-choice' | 'multiple-choice' | 'true-false'
-  answers: Answer[]
-  tags?: string[]
-}
-
-interface Quiz {
-  _id: string
-  title: string
-  description?: string
-  questionIds: Question[]
-}
-
-interface QuizSubmission {
-  quizId: string
-  score: number
-  totalQuestions: number
-  detailedResults: {
-    questionId: string
-    selectedAnswerIds: string[]
-    correctAnswerIds: string[]
-    isCorrect: boolean
-    message?: string
-  }[]
-}
 
 export default function QuizPage() {
   const [quiz, setQuiz] = useState<Quiz | null>(null)

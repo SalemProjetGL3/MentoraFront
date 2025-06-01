@@ -8,9 +8,8 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
-import { Lesson, Module, Course } from "@/app/courses/types/course"
+import { Lesson, Module, Course} from "@/app/courses/types/course"
 import { CourseProgress } from "@/app/courses/types/courseProgress"
-import axios from "axios"
 
 import {
   BookOpen,
@@ -29,33 +28,28 @@ import {
 export default function CoursePage({ params }: { params: { id: string } }) {
   const [activeModule, setActiveModule] = useState(0)
   const [activeLesson, setActiveLesson] = useState(0)
-  const [course, setCourse] = useState<Course | null>(null)
-  const [progress, setProgress] = useState<CourseProgress | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+
+  const [course, setCourse] = useState< Course | null>(null);
+  const [progress, setProgress] = useState<CourseProgress | null>(null);
+
 
   useEffect(() => {
     const fetchCourseAndProgress = async () => {
-      try {
-        setLoading(true)
-        const [courseRes, progressRes] = await Promise.all([
-          axios.get<Course>(`${process.env.NEXT_PUBLIC_API_URL}/courses/${params.id}`),
-          axios.get<CourseProgress>(`${process.env.NEXT_PUBLIC_API_URL}/progress/${params.id}`)
-        ])
-        
-        setCourse(courseRes.data)
-        setProgress(progressRes.data)
-        setError(null)
-      } catch (err) {
-        setError('Failed to fetch course data. Please try again later.')
-        console.error('Error fetching course:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
+      const res = await fetch(`http://localhost:3003/courses/${params.id}`);
+      const data = await res.json();
+      setCourse(data);
 
-    fetchCourseAndProgress()
-  }, [params.id])
+      const userId = "currentUserId"; 
+      const progressRes = await fetch(`http://localhost:3003/progress/${userId}/${params.id}`);
+      const progressData = await progressRes.json();
+      setProgress(progressData); 
+    };
+    fetchCourseAndProgress();
+  }, [params.id]);
+
+
+  if (!course) return <div>Chargement...</div>;
+
 
   const getLessonIcon = (type: string) => {
     switch (type) {
@@ -72,40 +66,28 @@ export default function CoursePage({ params }: { params: { id: string } }) {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mentora-blue"></div>
-      </div>
-    )
+
+  function countTotalLessons(course: Course): number {
+    return course.modules.reduce(
+      (acc: number, module: Module) => acc + module.lessons.length,
+      0
+    );
   }
 
-  if (error || !course) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error || 'Course not found'}</p>
-          <Button asChild variant="outline">
-            <Link href="/courses">Return to Courses</Link>
-          </Button>
-        </div>
-      </div>
-    )
+  function countCompletedLessons(course: Course): number {
+    return course.modules.reduce(
+      (acc: number, module: Module) =>
+        acc + module.lessons.filter((lesson: Lesson) => lesson.completed).length,
+      0
+    );
   }
 
-  const totalLessons = course.modules.reduce(
-    (acc, module) => acc + module.lessons.length,
-    0
-  )
-
-  const completedLessons = course.modules.reduce(
-    (acc, module) => acc + module.lessons.filter(lesson => lesson.completed).length,
-    0
-  )
+  const totalLessons = course ? countTotalLessons(course) : 0;
+  const completedLessons = course ? countCompletedLessons(course) : 0;
 
   return (
     <div className="relative min-h-screen flex flex-col">
-      <Navbar isLoggedIn={true} />
+      <Navbar />
 
       <div className="flex flex-1">
         {/* Sidebar */}
@@ -201,9 +183,27 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                  <Button className="flex-1 bg-gradient-to-r from-mentora-blue to-mentora-purple hover:opacity-90">
-                    Continuer l'apprentissage
-                  </Button>
+                  {course && (() => {
+                    // Find first uncompleted lesson
+                    let continueUrl = `/courses/${params.id}/${course.modules[0].id}/${course.modules[0].lessons[0].id}`
+                    
+                    for (const module of course.modules) {
+                      for (const lesson of module.lessons) {
+                        if (!lesson.completed) {
+                          continueUrl = `/courses/${params.id}/${module.id}/${lesson.id}`
+                          break
+                        }
+                      }
+                    }
+                    
+                    return (
+                      <Link href={continueUrl}>
+                        <Button className="flex-1 bg-gradient-to-r from-mentora-blue to-mentora-purple hover:opacity-90">
+                          Continuer l'apprentissage
+                        </Button>
+                      </Link>
+                    )
+                  })()}
                   <Button variant="outline" className="flex-1">
                     Télécharger les ressources
                   </Button>
@@ -276,17 +276,19 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                                   ? "Vidéo"
                                   : lesson.type === "text"
                                     ? "Lecture"
-                                    : lesson.type === "code"
-                                      ? "Exercice pratique"
+                                    : lesson.type === "image"
+                                      ? "Analyser"
                                       : "Quiz"}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
-                            <span className="text-sm text-muted-foreground">1 HOUR</span>
-                            <Button variant="ghost" size="sm">
-                              {lesson.completed ? "Revoir" : "Commencer"}
-                            </Button>
+                            <span className="text-sm text-muted-foreground">{lesson.duration}</span>
+                            <Link href={`/courses/${params.id}/${module.id}/${lesson.id}`}>
+                              <Button variant="ghost" size="sm">
+                                {lesson.completed ? "Revoir" : "Commencer"}
+                              </Button>
+                            </Link>
                           </div>
                         </div>
                       ))}
