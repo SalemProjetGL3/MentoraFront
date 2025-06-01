@@ -23,14 +23,14 @@ export default function LeaderboardPage() {
   // Step 1: Fetch initial leaderboard
   useEffect(() => {
     const apiUrl = (process.env.NEXT_PUBLIC_LEADERBOARD_API_URL)
-    
+    console.log("API URL:", apiUrl)
     if (!apiUrl) {
       setError('API URL not configured')
       setLoading(false)
       return
     }
 
-    fetch(`${apiUrl}/leaderboard`)
+    fetch(`http://localhost:3009/leaderboard`)
       .then((res) => res.json())
       .then((data) => {
         setPlayers(data)
@@ -49,7 +49,7 @@ export default function LeaderboardPage() {
     
     if (!apiUrl) return
 
-    const eventSource = new EventSource(`${apiUrl}/leaderboard/stream`)
+    const eventSource = new EventSource(`http://localhost:3009/leaderboard/stream`)
 
     eventSource.addEventListener('leaderboardUpdate', (event: MessageEvent) => {
       const updated = JSON.parse(event.data)
