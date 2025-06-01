@@ -35,12 +35,11 @@ export default function CoursePage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const fetchCourseAndProgress = async () => {
-      const res = await fetch(`http://localhost:3003/courses/${params.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_COURSE_API_URL}/courses/${params.id}`);
       const data = await res.json();
       setCourse(data);
 
-      const userId = "currentUserId"; 
-      const progressRes = await fetch(`http://localhost:3003/progress/${userId}/${params.id}`);
+      const progressRes = await fetch(`${process.env.NEXT_PUBLIC_COURSE_API_URL}/progress/${params.id}`);
       const progressData = await progressRes.json();
       setProgress(progressData); 
     };
@@ -95,8 +94,8 @@ export default function CoursePage({ params }: { params: { id: string } }) {
           <div className="p-4 border-b">
             <h2 className="font-semibold">Contenu du parcours</h2>
             <div className="flex items-center gap-2 mt-2">
-              <Progress value={totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100)} className="h-2" />
-              <span className="text-xs text-muted-foreground">{totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100)}%</span>
+              <Progress value={progress?.progressRate} className="h-2" />
+              <span className="text-xs text-muted-foreground">{progress?.progressRate}%</span>
             </div>
           </div>
 

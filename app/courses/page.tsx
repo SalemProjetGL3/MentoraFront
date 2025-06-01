@@ -34,7 +34,7 @@ export default function CoursesPage() {
         if (filters.sort) params.append('sort', filters.sort)
         if (searchQuery) params.append('search', searchQuery)
 
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/courses?${params.toString()}`)
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_COURSE_API_URL}/courses?${params.toString()}`)
         setCourses(response.data)
         setError(null)
       } catch (err) {
