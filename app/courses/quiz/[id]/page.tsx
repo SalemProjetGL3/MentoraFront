@@ -1,3 +1,4 @@
+// app/courses/quiz/[id]/page.tsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -11,11 +12,45 @@ import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { CheckCircle2, XCircle, Timer, Trophy, ArrowRight, ChevronLeft, BarChart } from "lucide-react"
 import { toast } from "sonner"
-import { Quiz, Answer, QuizSubmission, Question } from "../types/quiz"
+import React from 'react'
 
+interface Answer {
+  _id: string
+  text: string
+  isCorrect: boolean
+}
 
+interface Question {
+  _id: string
+  text: string
+  type: 'single-choice' | 'multiple-choice' | 'true-false'
+  answers: Answer[]
+  tags?: string[]
+}
 
-export default function QuizPage() {
+interface Quiz {
+  _id: string
+  title: string
+  description?: string
+  questionIds: Question[] // This needs to be Question[] because we populate it
+}
+
+interface QuizSubmission {
+  quizId: string
+  score: number
+  totalQuestions: number
+  detailedResults: {
+    questionId: string
+    selectedAnswerIds: string[]
+    correctAnswerIds: string[]
+    isCorrect: boolean
+    message?: string
+  }[]
+}
+
+export default function QuizPage({ params }: { params: { id: string } }) {
+  const { id: quizId } = params // Destructure the quizId from params
+  
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: string]: string[] }>({})
@@ -25,26 +60,36 @@ export default function QuizPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [submissionResults, setSubmissionResults] = useState<QuizSubmission | null>(null)
 
-  // Fetch quiz data
+  // Fetch quiz data using the dynamic quizId
   useEffect(() => {
     const fetchQuiz = async () => {
+      if (!quizId) { // Ensure quizId exists before fetching
+        setIsLoading(false)
+        toast.error('No quiz ID provided.')
+        return
+      }
       try {
-        const response = await fetch('http://localhost:3000/quizzes/1?populate=true')
+        // Use the quizId from the URL parameters
+        const response = await fetch(`http://localhost:3000/quizzes/${quizId}?populate=true`)
         if (!response.ok) {
-          throw new Error('Failed to fetch quiz')
+          // Check for 404 specifically
+          if (response.status === 404) {
+            throw new Error(`Quiz with ID "${quizId}" not found.`)
+          }
+          throw new Error('Failed to fetch quiz.')
         }
         const data = await response.json()
         setQuiz(data)
-      } catch (error) {
+      } catch (error: any) { // Type 'error' as any for now
         console.error('Error fetching quiz:', error)
-        toast.error('Failed to load quiz. Please try again later.')
+        toast.error(error.message || 'Failed to load quiz. Please try again later.')
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchQuiz()
-  }, [])
+  }, [quizId]) // Re-run effect if quizId changes
 
   // Timer effect
   useEffect(() => {
@@ -105,16 +150,17 @@ export default function QuizPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to submit quiz')
+        const errorData = await response.json(); // Get error details from response body
+        throw new Error(errorData.message || 'Failed to submit quiz');
       }
 
       const results = await response.json()
       setSubmissionResults(results)
       setQuizCompleted(true)
       setShowResults(true)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting quiz:', error)
-      toast.error('Failed to submit quiz. Please try again.')
+      toast.error(error.message || 'Failed to submit quiz. Please try again.')
     }
   }
 
@@ -138,9 +184,10 @@ export default function QuizPage() {
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-muted-foreground">Quiz not found</p>
+            <p className="text-muted-foreground">Quiz not found or an error occurred.</p>
+            {/* IMPORTANT: Link back to the quizzes list under courses */}
             <Button asChild className="mt-4">
-              <Link href="/courses">Back to Courses</Link>
+              <Link href="/courses/quizzes">Back to Quizzes</Link>
             </Button>
           </div>
         </div>
@@ -156,7 +203,7 @@ export default function QuizPage() {
         {/* Sidebar */}
         <div className="hidden md:flex flex-col w-80 border-r bg-muted/30 overflow-y-auto">
           <div className="p-4 border-b">
-            <h2 className="font-semibold">Course Progress</h2>
+            <h2 className="font-semibold">Quiz Progress</h2>
             <div className="flex items-center gap-2 mt-2">
               <Progress value={progress} className="h-2" />
               <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
@@ -178,11 +225,11 @@ export default function QuizPage() {
           <div className="container px-4 md:px-6 py-8">
             <div className="flex flex-col gap-6 mb-8">
               <Link
-                href="/courses"
+                href="/courses/quizzes" // IMPORTANT: Changed to link back to the list of quizzes under courses
                 className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Back to Courses
+                Back to Quizzes
               </Link>
 
               {/* Quiz Header */}
@@ -293,4 +340,4 @@ export default function QuizPage() {
       <Chatbot />
     </div>
   )
-} 
+}
