@@ -1,6 +1,6 @@
 import { GraphQLClient } from 'graphql-request';
 
-const USER_SERVICE_API_URL = process.env.NEXT_PUBLIC_USER_SERVICE_API_URL || 'http://localhost:3001/graphql';
+const USER_SERVICE_API_URL = process.env.NEXT_PUBLIC_USER_SERVICE_API_URL || 'http://localhost:3002/graphql';
 
 const graphqlClient = new GraphQLClient(USER_SERVICE_API_URL, {
   headers: {

@@ -49,7 +49,7 @@ export function RegisterForm({ onLoadingChange }: RegisterFormProps) {
   
     try {
       const apiUrl = process.env.NEXT_PUBLIC_AUTH_API_URL;
-  
+      console.log('API URL:', apiUrl);
       if (!apiUrl) {
         throw new Error('API URL is not configured');
       }
