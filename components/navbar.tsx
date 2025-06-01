@@ -72,6 +72,7 @@ export function Navbar() {
               src="/images/logo.png" 
               alt="Mentora Logo" 
               fill
+              sizes="(max-width: 768px) 40px, 40px"
               style={{ objectFit: 'contain' }}
               priority
             />

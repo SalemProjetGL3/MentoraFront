@@ -22,7 +22,7 @@ export function Chatbot() {
   const chatbot_url = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([
-    { text: "Bonjour ! Je suis l'assistant Mentora. Comment puis-je vous aider aujourd'hui ?", isUser: false },
+    { text: "Hello! I'm the Mentora assistant. How can I help you today?", isUser: false },
   ]);
   const [input, setInput] = useState("");
   const [socket, setSocket] = useState<any>(null);
@@ -31,53 +31,69 @@ export function Chatbot() {
   useEffect(() => {
     if (isOpen && !socket) {
       // Connect to the WebSocket server only when chat is opened
-      const socketConnection = io(chatbot_url);
-      setSocket(socketConnection);
+      console.log('Connecting to WebSocket server at:', chatbot_url);
+      
+      if (!chatbot_url) {
+        console.error('WebSocket URL not configured');
+        setMessages(prev => [...prev, { 
+          text: "Sorry, the chat service is currently unavailable. Please try again later.", 
+          isUser: false 
+        }]);
+        return;
+      }
 
-      // Handle incoming messages
-      socketConnection.on("response", (data: string) => {
-        console.log('=== Received WebSocket Response ===');
-        console.log('Raw response:', data);
+      const socketConnection = io(chatbot_url);
+
+      socketConnection.on("connect", () => {
+        console.log("✅ Connected to server");
+      });
+
+      socketConnection.on("response", (data) => {
+        console.log("📩 Response:", data);
         setIsLoading(false);
         try {
-          // Try to parse the response as JSON
-          const parsedData = JSON.parse(data);
-          console.log('Parsed JSON response:', parsedData);
-          setMessages((prev) => [
-            ...prev,
-            { text: parsedData.message || data, isUser: false },
-          ]);
+          const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+          setMessages(prev => [...prev, { 
+            text: parsedData.message || JSON.stringify(parsedData), 
+            isUser: false 
+          }]);
         } catch (error) {
-          // If parsing fails, use the raw data
           console.log('Response was not JSON, using raw data');
-          console.log('Error parsing JSON:', error);
-          setMessages((prev) => [
-            ...prev,
-            { text: data, isUser: false },
-          ]);
+          setMessages(prev => [...prev, { 
+            text: data, 
+            isUser: false 
+          }]);
         }
-        console.log('=== End of Response ===');
       });
 
-      // Handle connection events
-      socketConnection.on("connect", () => {
-        console.log('Connected to WebSocket server');
+      socketConnection.on("error", (err) => {
+        console.error("❌ Error:", err);
+        setMessages(prev => [...prev, { 
+          text: "An error occurred. Please try again later.", 
+          isUser: false 
+        }]);
+        setIsLoading(false);
       });
 
-      socketConnection.on("disconnect", () => {
-        console.log('Disconnected from WebSocket server');
-      });
-
-      socketConnection.on("error", (error) => {
-        console.error('WebSocket error:', error);
-      });
+      setSocket(socketConnection);
 
       return () => {
         console.log('Cleaning up socket connection');
-        socketConnection.disconnect(); // Clean up on unmount
+        if (socketConnection.connected) {
+          socketConnection.disconnect();
+        }
       };
     }
   }, [isOpen, socket, chatbot_url]);
+
+  // Add cleanup when chat is closed
+  useEffect(() => {
+    if (!isOpen && socket) {
+      console.log('Chat closed, disconnecting socket');
+      socket.disconnect();
+      setSocket(null);
+    }
+  }, [isOpen, socket]);
 
   const handleSendMessage = () => {
     if (!input.trim()) return;
@@ -89,29 +105,24 @@ export function Chatbot() {
     setInput("");
     setIsLoading(true);
 
-    // Create message object with mock data
-    const messageData = {
+    // Create message object
+    const message = {
       question: input,
-      lesson: "Introduction to React",
-      course: "Web Development Fundamentals"
+      lesson: "example_lesson",
+      course: "example_course"
     };
-
-    // Log the exact JSON string being sent
-    const jsonString = JSON.stringify(messageData);
-    console.log('Sending JSON string:', jsonString);
-    console.log('JSON structure:', {
-      question: messageData.question,
-      lesson: messageData.lesson,
-      course: messageData.course
-    });
 
     // Send the message to the WebSocket server
     if (socket) {
-      console.log('Socket connection exists, emitting message...');
-      socket.emit("question", jsonString);
-      console.log('Message emitted successfully');
+      console.log("📤 Sent:", message);
+      socket.emit("question", message);
     } else {
       console.log('No socket connection available');
+      setMessages(prev => [...prev, { 
+        text: "Sorry, the server connection is not available.", 
+        isUser: false 
+      }]);
+      setIsLoading(false);
     }
   };
 
@@ -121,7 +132,7 @@ export function Chatbot() {
         <Card className="w-80 md:w-96 shadow-lg">
           <CardHeader className="bg-secondary/50 py-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Assistant Mentora</CardTitle>
+              <CardTitle className="text-sm font-medium">Mentora Assistant</CardTitle>
               <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
                 <X className="h-4 w-4" />
               </Button>
@@ -180,7 +191,7 @@ export function Chatbot() {
               }}
             >
               <Input
-                placeholder="Tapez votre message..."
+                placeholder="Type your message..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 className="flex-1"
