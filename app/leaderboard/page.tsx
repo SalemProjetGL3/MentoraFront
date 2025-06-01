@@ -1,26 +1,70 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { Button } from "@/components/ui/button"
 import { Trophy, Medal, Star, Crown } from "lucide-react"
 
+type Player = {
+  userId: string;
+  totalPoints: number;
+  currentPoints: number;
+  streak: number;
+  badgesIds: string[];
+};
+
 export default function LeaderboardPage() {
   const [timeFilter, setTimeFilter] = useState("all-time")
+  const [players, setPlayers] = useState<Player[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const topUsers = [
-    { rank: 1, name: "Sarah Johnson", points: 2500, courses: 12, badges: 8, avatar: "/placeholder.svg" },
-    { rank: 2, name: "Michael Chen", points: 2300, courses: 10, badges: 7, avatar: "/placeholder.svg" },
-    { rank: 3, name: "Emma Wilson", points: 2100, courses: 9, badges: 6, avatar: "/placeholder.svg" },
-    { rank: 4, name: "David Brown", points: 1900, courses: 8, badges: 5, avatar: "/placeholder.svg" },
-    { rank: 5, name: "Lisa Anderson", points: 1800, courses: 7, badges: 5, avatar: "/placeholder.svg" },
-    { rank: 6, name: "James Wilson", points: 1700, courses: 7, badges: 4, avatar: "/placeholder.svg" },
-    { rank: 7, name: "Maria Garcia", points: 1600, courses: 6, badges: 4, avatar: "/placeholder.svg" },
-    { rank: 8, name: "John Smith", points: 1500, courses: 6, badges: 3, avatar: "/placeholder.svg" },
-    { rank: 9, name: "Anna Lee", points: 1400, courses: 5, badges: 3, avatar: "/placeholder.svg" },
-    { rank: 10, name: "Tom Harris", points: 1300, courses: 5, badges: 3, avatar: "/placeholder.svg" },
-  ]
+  // Step 1: Fetch initial leaderboard
+  useEffect(() => {
+    const apiUrl = (process.env.NEXT_PUBLIC_LEADERBOARD_API_URL)
+    
+    if (!apiUrl) {
+      setError('API URL not configured')
+      setLoading(false)
+      return
+    }
+
+    fetch(`${apiUrl}/leaderboard`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPlayers(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error('Failed to fetch leaderboard:', err)
+        setError('Failed to load leaderboard')
+        setLoading(false)
+      })
+  }, [])
+
+  // Step 2: Subscribe to updates via SSE
+  useEffect(() => {
+    const apiUrl = (process.env.NEXT_PUBLIC_LEADERBOARD_API_URL)
+    
+    if (!apiUrl) return
+
+    const eventSource = new EventSource(`${apiUrl}/leaderboard/stream`)
+
+    eventSource.addEventListener('leaderboardUpdate', (event: MessageEvent) => {
+      const updated = JSON.parse(event.data)
+      setPlayers(updated)
+    })
+
+    eventSource.onerror = (err) => {
+      console.error("SSE error:", err)
+      eventSource.close()
+    }
+
+    return () => {
+      eventSource.close()
+    }
+  }, [])
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -40,7 +84,7 @@ export default function LeaderboardPage() {
       <div className="blob blob-blue"></div>
       <div className="blob blob-purple"></div>
 
-      <Navbar isLoggedIn={true} />
+      <Navbar />
 
       <main className="flex-1 py-12">
         <div className="container px-4 md:px-6">
@@ -72,48 +116,58 @@ export default function LeaderboardPage() {
             </Button>
           </div>
 
-          <div className="border rounded-lg overflow-hidden bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="h-12 px-4 text-left align-middle font-medium">Rank</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">User</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Points</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Courses</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Badges</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topUsers.map((user) => (
-                    <tr key={user.rank} className="border-b">
-                      <td className="p-4 align-middle">
-                        <div className="flex items-center gap-2">
-                          {getRankIcon(user.rank)}
-                          <span className="font-medium">#{user.rank}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 align-middle">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={user.avatar}
-                            alt={user.name}
-                            className="h-8 w-8 rounded-full"
-                          />
-                          <span className="font-medium">{user.name}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 align-middle">
-                        <span className="font-medium text-mentora-blue">{user.points}</span>
-                      </td>
-                      <td className="p-4 align-middle">{user.courses}</td>
-                      <td className="p-4 align-middle">{user.badges}</td>
+          {loading ? (
+            <div className="text-center">Loading...</div>
+          ) : error ? (
+            <div className="text-center text-red-500">{error}</div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden bg-card">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="h-12 px-4 text-left align-middle font-medium">Rank</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium">User</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium">Total Points</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium">Current Points</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium">Streak</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium">Badges</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {players.map((player, index) => (
+                      <tr key={player.userId} className="border-b">
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-2">
+                            {getRankIcon(index + 1)}
+                            <span className="font-medium">#{index + 1}</span>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src="/placeholder.svg"
+                              alt={`User ${player.userId}`}
+                              className="h-8 w-8 rounded-full"
+                            />
+                            <span className="font-medium">User {player.userId}</span>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <span className="font-medium text-mentora-blue">{player.totalPoints}</span>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <span className="font-medium">{player.currentPoints}</span>
+                        </td>
+                        <td className="p-4 align-middle">{player.streak}</td>
+                        <td className="p-4 align-middle">{player.badgesIds.length}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
 

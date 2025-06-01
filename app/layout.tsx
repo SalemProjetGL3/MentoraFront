@@ -1,5 +1,6 @@
 import type React from "react"
 import { ThemeProvider } from "@/components/theme-provider"
+import { LoadingProvider } from "@/components/ui/loading-provider"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import type { Metadata } from "next"
@@ -27,7 +28,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} bg-background min-h-screen`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {children}
+          <LoadingProvider>
+            {children}
+          </LoadingProvider>
         </ThemeProvider>
       </body>
     </html>
