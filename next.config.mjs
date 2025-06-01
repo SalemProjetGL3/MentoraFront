@@ -1,14 +1,12 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
+  async rewrites() {
+    return [
+      {
+        source: "/chatbot/:path*", // Proxy all WebSocket requests under /chatbot
+        destination: "http://localhost:3010/chatbot/:path*", // Your NestJS backend URL
+      },
+    ];
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
-  },
-}
+};
 
-export default nextConfig
+export default nextConfig;

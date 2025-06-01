@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,10 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
+import { Lesson, Module, Course } from "@/app/courses/types/course"
+import { CourseProgress } from "@/app/courses/types/courseProgress"
+import axios from "axios"
+
 import {
   BookOpen,
   CheckCircle,
@@ -25,75 +29,33 @@ import {
 export default function CoursePage({ params }: { params: { id: string } }) {
   const [activeModule, setActiveModule] = useState(0)
   const [activeLesson, setActiveLesson] = useState(0)
+  const [course, setCourse] = useState<Course | null>(null)
+  const [progress, setProgress] = useState<CourseProgress | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Données de démonstration pour le parcours
-  const course = {
-    id: Number.parseInt(params.id),
-    title: "React.js Fondamentaux",
-    description: "Maîtrisez les bases de React et créez vos premières applications.",
-    longDescription:
-      "Ce parcours complet vous permettra de maîtriser les fondamentaux de React.js, la bibliothèque JavaScript la plus populaire pour créer des interfaces utilisateur interactives. Vous apprendrez à créer des composants, gérer l'état, utiliser les hooks, et bien plus encore.",
-    instructor: "Marie Dupont",
-    instructorRole: "Développeuse Senior Frontend",
-    level: "Débutant",
-    category: "Frontend",
-    duration: "10 heures",
-    rating: 4.8,
-    students: 4823,
-    lastUpdated: "Avril 2023",
-    progress: 35,
-    image: "/placeholder.svg?height=400&width=800",
-    instructorImage: "/placeholder.svg?height=100&width=100",
-    modules: [
-      {
-        title: "Introduction à React",
-        lessons: [
-          { title: "Qu'est-ce que React?", type: "video", duration: "8 min", completed: true },
-          { title: "Installation et configuration", type: "text", duration: "12 min", completed: true },
-          { title: "Votre première application React", type: "code", duration: "15 min", completed: false },
-          { title: "Quiz - Introduction", type: "quiz", duration: "5 min", completed: false },
-        ],
-      },
-      {
-        title: "Les composants React",
-        lessons: [
-          { title: "Composants fonctionnels", type: "video", duration: "10 min", completed: false },
-          { title: "Composants de classe", type: "video", duration: "12 min", completed: false },
-          { title: "Props et état", type: "text", duration: "15 min", completed: false },
-          { title: "Exercice pratique", type: "code", duration: "20 min", completed: false },
-          { title: "Quiz - Composants", type: "quiz", duration: "5 min", completed: false },
-        ],
-      },
-      {
-        title: "Les Hooks",
-        lessons: [
-          { title: "Introduction aux Hooks", type: "video", duration: "8 min", completed: false },
-          { title: "useState", type: "text", duration: "10 min", completed: false },
-          { title: "useEffect", type: "text", duration: "12 min", completed: false },
-          { title: "Hooks personnalisés", type: "code", duration: "15 min", completed: false },
-          { title: "Quiz - Hooks", type: "quiz", duration: "5 min", completed: false },
-        ],
-      },
-      {
-        title: "Routage avec React Router",
-        lessons: [
-          { title: "Installation de React Router", type: "text", duration: "5 min", completed: false },
-          { title: "Configuration des routes", type: "video", duration: "12 min", completed: false },
-          { title: "Navigation et paramètres", type: "code", duration: "15 min", completed: false },
-          { title: "Quiz - Routage", type: "quiz", duration: "5 min", completed: false },
-        ],
-      },
-      {
-        title: "Gestion d'état avancée",
-        lessons: [
-          { title: "Context API", type: "video", duration: "10 min", completed: false },
-          { title: "Introduction à Redux", type: "video", duration: "15 min", completed: false },
-          { title: "Projet final", type: "code", duration: "30 min", completed: false },
-          { title: "Évaluation finale", type: "quiz", duration: "15 min", completed: false },
-        ],
-      },
-    ],
-  }
+  useEffect(() => {
+    const fetchCourseAndProgress = async () => {
+      try {
+        setLoading(true)
+        const [courseRes, progressRes] = await Promise.all([
+          axios.get<Course>(`${process.env.NEXT_PUBLIC_API_URL}/courses/${params.id}`),
+          axios.get<CourseProgress>(`${process.env.NEXT_PUBLIC_API_URL}/progress/${params.id}`)
+        ])
+        
+        setCourse(courseRes.data)
+        setProgress(progressRes.data)
+        setError(null)
+      } catch (err) {
+        setError('Failed to fetch course data. Please try again later.')
+        console.error('Error fetching course:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourseAndProgress()
+  }, [params.id])
 
   const getLessonIcon = (type: string) => {
     switch (type) {
@@ -110,10 +72,35 @@ export default function CoursePage({ params }: { params: { id: string } }) {
     }
   }
 
-  const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mentora-blue"></div>
+      </div>
+    )
+  }
+
+  if (error || !course) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error || 'Course not found'}</p>
+          <Button asChild variant="outline">
+            <Link href="/courses">Return to Courses</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const totalLessons = course.modules.reduce(
+    (acc, module) => acc + module.lessons.length,
+    0
+  )
+
   const completedLessons = course.modules.reduce(
-    (acc, module) => acc + module.lessons.filter((lesson) => lesson.completed).length,
-    0,
+    (acc, module) => acc + module.lessons.filter(lesson => lesson.completed).length,
+    0
   )
 
   return (
@@ -126,8 +113,8 @@ export default function CoursePage({ params }: { params: { id: string } }) {
           <div className="p-4 border-b">
             <h2 className="font-semibold">Contenu du parcours</h2>
             <div className="flex items-center gap-2 mt-2">
-              <Progress value={course.progress} className="h-2" />
-              <span className="text-xs text-muted-foreground">{course.progress}%</span>
+              <Progress value={totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100)} className="h-2" />
+              <span className="text-xs text-muted-foreground">{totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100)}%</span>
             </div>
           </div>
 
@@ -169,7 +156,7 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                           )}
                           <span className="text-sm">{lesson.title}</span>
                         </div>
-                        <span className="text-xs text-muted-foreground">{lesson.duration}</span>
+                        <span className="text-xs text-muted-foreground">{course.duration}</span>
                       </div>
                     ))}
                   </div>
@@ -192,7 +179,7 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                   Retour aux parcours
                 </Link>
                 <h1 className="text-3xl font-bold tracking-tight mb-2">{course.title}</h1>
-                <p className="text-muted-foreground mb-4">{course.longDescription}</p>
+                <p className="text-muted-foreground mb-4">{course.description}</p>
 
                 <div className="flex flex-wrap gap-4 mb-6">
                   <div className="flex items-center gap-1">
@@ -201,29 +188,15 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{course.duration}</span>
+                    <span className="text-sm">+1 hour</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{course.students} apprenants</span>
+                    <span className="text-sm">+99 apprenants</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 text-yellow-500" />
-                    <span className="text-sm">{course.rating} (124 avis)</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 mb-8">
-                  <Image
-                    src={course.instructorImage || "/placeholder.svg"}
-                    alt={course.instructor}
-                    width={48}
-                    height={48}
-                    className="rounded-full"
-                  />
-                  <div>
-                    <div className="font-medium">{course.instructor}</div>
-                    <div className="text-sm text-muted-foreground">{course.instructorRole}</div>
+                    <span className="text-sm">4 stars (124 avis)</span>
                   </div>
                 </div>
 
@@ -240,7 +213,7 @@ export default function CoursePage({ params }: { params: { id: string } }) {
               <div className="md:w-1/3">
                 <div className="rounded-lg overflow-hidden border bg-card shadow-sm">
                   <div className="relative aspect-video">
-                    <Image src={course.image || "/placeholder.svg"} alt={course.title} fill className="object-cover" />
+                    {/* <Image src={course.image || "/placeholder.svg"} alt={course.title} fill className="object-cover" /> */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Button size="icon" className="rounded-full bg-primary/90 hover:bg-primary/100 h-12 w-12">
                         <Play className="h-6 w-6" />
@@ -254,7 +227,7 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                         {completedLessons}/{totalLessons} leçons
                       </div>
                     </div>
-                    <Progress value={course.progress} className="h-2 mb-4" />
+                    <Progress value={progress?.progressRate} className="h-2 mb-4" />
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Niveau:</span>
@@ -263,10 +236,6 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                       <div className="flex justify-between text-sm">
                         <span>Catégorie:</span>
                         <span className="font-medium">{course.category}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Dernière mise à jour:</span>
-                        <span className="font-medium">{course.lastUpdated}</span>
                       </div>
                     </div>
                   </div>
@@ -314,7 +283,7 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
-                            <span className="text-sm text-muted-foreground">{lesson.duration}</span>
+                            <span className="text-sm text-muted-foreground">1 HOUR</span>
                             <Button variant="ghost" size="sm">
                               {lesson.completed ? "Revoir" : "Commencer"}
                             </Button>
@@ -328,29 +297,7 @@ export default function CoursePage({ params }: { params: { id: string } }) {
 
               <TabsContent value="overview">
                 <div className="prose prose-invert max-w-none">
-                  <h2>À propos de ce parcours</h2>
-                  <p>
-                    Ce parcours complet vous permettra de maîtriser les fondamentaux de React.js, la bibliothèque
-                    JavaScript la plus populaire pour créer des interfaces utilisateur interactives. Vous apprendrez à
-                    créer des composants, gérer l'état, utiliser les hooks, et bien plus encore.
-                  </p>
-
-                  <h3>Ce que vous apprendrez</h3>
-                  <ul>
-                    <li>Comprendre les concepts fondamentaux de React</li>
-                    <li>Créer des composants réutilisables</li>
-                    <li>Gérer l'état local et global</li>
-                    <li>Utiliser les Hooks React</li>
-                    <li>Implémenter le routage avec React Router</li>
-                    <li>Créer une application React complète</li>
-                  </ul>
-
-                  <h3>Prérequis</h3>
-                  <ul>
-                    <li>Connaissances de base en HTML, CSS et JavaScript</li>
-                    <li>Compréhension des concepts de programmation</li>
-                    <li>Environnement de développement configuré (instructions fournies)</li>
-                  </ul>
+                  {course.apercu}
                 </div>
               </TabsContent>
 
@@ -359,12 +306,12 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="md:w-1/3 bg-muted/30 p-6 rounded-lg">
                       <div className="text-center mb-4">
-                        <div className="text-5xl font-bold">{course.rating}</div>
+                        <div className="text-5xl font-bold">4 Stars</div>
                         <div className="flex justify-center my-2">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`h-5 w-5 ${i < Math.floor(course.rating) ? "text-yellow-500" : "text-muted-foreground"}`}
+                              className={`h-5 w-5 ${i < Math.floor(4) ? "text-yellow-500" : "text-muted-foreground"}`}
                             />
                           ))}
                         </div>

@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -6,84 +8,60 @@ import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BookOpen, Search, Filter, Clock } from "lucide-react"
+import { useEffect, useState } from "react"
+import axios from "axios"
+import { Course } from "./types/course"
 
 export default function CoursesPage() {
-  // Données de démonstration pour les parcours
-  const courses = [
-    {
-      id: 1,
-      title: "React.js Fondamentaux",
-      description: "Maîtrisez les bases de React et créez vos premières applications.",
-      modules: 8,
-      duration: "10 heures",
-      level: "Débutant",
-      category: "Frontend",
-      color: "blue",
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: 2,
-      title: "Next.js Avancé",
-      description: "Apprenez à créer des applications web performantes avec Next.js.",
-      modules: 10,
-      duration: "15 heures",
-      level: "Intermédiaire",
-      category: "Frontend",
-      color: "purple",
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: 3,
-      title: "Vue.js 3 Complet",
-      description: "Découvrez Vue.js 3 et son écosystème de A à Z.",
-      modules: 12,
-      duration: "18 heures",
-      level: "Tous niveaux",
-      category: "Frontend",
-      color: "green",
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: 4,
-      title: "Node.js & Express",
-      description: "Créez des API RESTful avec Node.js et Express.",
-      modules: 9,
-      duration: "12 heures",
-      level: "Intermédiaire",
-      category: "Backend",
-      color: "orange",
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: 5,
-      title: "Angular Complet",
-      description: "Maîtrisez Angular pour développer des applications d'entreprise.",
-      modules: 14,
-      duration: "20 heures",
-      level: "Avancé",
-      category: "Frontend",
-      color: "blue",
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: 6,
-      title: "Django REST Framework",
-      description: "Développez des API robustes avec Django REST Framework.",
-      modules: 10,
-      duration: "16 heures",
-      level: "Intermédiaire",
-      category: "Backend",
-      color: "green",
-      image: "/placeholder.svg?height=200&width=400",
-    },
-  ]
+  const [courses, setCourses] = useState<Course[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [filters, setFilters] = useState({
+    category: 'all',
+    level: 'all',
+    sort: 'popular'
+  })
+  const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true)
+        // Construct the query parameters based on filters
+        const params = new URLSearchParams()
+        if (filters.category !== 'all') params.append('category', filters.category)
+        if (filters.level !== 'all') params.append('level', filters.level)
+        if (filters.sort) params.append('sort', filters.sort)
+        if (searchQuery) params.append('search', searchQuery)
+
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/courses?${params.toString()}`)
+        setCourses(response.data)
+        setError(null)
+      } catch (err) {
+        setError('Failed to fetch courses. Please try again later.')
+        console.error('Error fetching courses:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [filters, searchQuery])
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }
+
+  const handleFilterChange = (type: 'category' | 'level' | 'sort', value: string) => {
+    setFilters(prev => ({ ...prev, [type]: value }))
+  }
 
   return (
     <div className="relative min-h-screen flex flex-col">
       <div className="blob blob-blue"></div>
       <div className="blob blob-orange"></div>
 
-      <Navbar isLoggedIn={true} />
+      <Navbar />
 
       <main className="flex-1 py-12">
         <div className="container px-4 md:px-6">
@@ -95,7 +73,13 @@ export default function CoursesPage() {
             <div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
               <div className="relative w-full md:w-[260px]">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input type="search" placeholder="Rechercher un parcours..." className="w-full pl-8" />
+                <Input 
+                  type="search" 
+                  placeholder="Rechercher un parcours..." 
+                  className="w-full pl-8"
+                  value={searchQuery}
+                  onChange={handleSearch}
+                />
               </div>
               <Button variant="outline" size="icon" className="shrink-0">
                 <Filter className="h-4 w-4" />
@@ -106,7 +90,10 @@ export default function CoursesPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div className="flex items-center gap-2">
-              <Select defaultValue="all">
+              <Select 
+                value={filters.category}
+                onValueChange={(value) => handleFilterChange('category', value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
@@ -119,7 +106,10 @@ export default function CoursesPage() {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Select defaultValue="all">
+              <Select 
+                value={filters.level}
+                onValueChange={(value) => handleFilterChange('level', value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Niveau" />
                 </SelectTrigger>
@@ -132,7 +122,10 @@ export default function CoursesPage() {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Select defaultValue="popular">
+              <Select 
+                value={filters.sort}
+                onValueChange={(value) => handleFilterChange('sort', value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Trier par" />
                 </SelectTrigger>
@@ -145,42 +138,61 @@ export default function CoursesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <Link href={`/courses/${course.id}`} key={course.id}>
-                <div
-                  className={`course-card flex flex-col rounded-lg border bg-card shadow-sm hover:border-mentora-${course.color}`}
-                >
-                  <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
-                    <Image src={course.image || "/placeholder.svg"} alt={course.title} fill className="object-cover" />
-                    <div
-                      className={`absolute top-2 right-2 text-xs font-medium px-2.5 py-0.5 rounded-full bg-mentora-${course.color}/20 text-mentora-${course.color}`}
-                    >
-                      {course.level}
-                    </div>
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <div className="text-sm text-muted-foreground mb-2">{course.category}</div>
-                    <h3 className="text-xl font-bold mb-2">{course.title}</h3>
-                    <p className="text-muted-foreground text-sm flex-1">{course.description}</p>
-                    <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <BookOpen className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{course.modules} modules</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{course.duration}</span>
-                        </div>
+          {error && (
+            <div className="text-red-500 text-center mb-6">
+              {error}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mentora-blue mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Chargement des cours...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {courses.map((course) => (
+                <Link href={`/courses/${course.id}`} key={course.id}>
+                  <div
+                    className={`course-card flex flex-col rounded-lg border bg-card shadow-sm hover:border-mentora-${course.color}`}
+                  >
+                    <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
+                      {/* <Image src={course.image || "/placeholder.svg"} alt={course.title} fill className="object-cover" /> */}
+                      <div
+                        className={`absolute top-2 right-2 text-xs font-medium px-2.5 py-0.5 rounded-full bg-mentora-${course.color}/20 text-mentora-${course.color}`}
+                      >
+                        {course.level}
                       </div>
-                      <div className="text-sm font-medium">Voir →</div>
+                    </div>
+                    <div className="p-6 flex flex-col flex-1">
+                      <div className="text-sm text-muted-foreground mb-2">{course.category}</div>
+                      <h3 className="text-xl font-bold mb-2">{course.title}</h3>
+                      <p className="text-muted-foreground text-sm flex-1">{course.description}</p>
+                      <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1">
+                            <BookOpen className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">{course.modules.length} modules</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">{course.duration}</span>
+                          </div>
+                        </div>
+                        <div className="text-sm font-medium">Voir →</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {!loading && courses.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Aucun cours trouvé</p>
+            </div>
+          )}
 
           <div className="flex justify-center mt-10">
             <div className="flex items-center gap-2">

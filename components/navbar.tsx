@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -16,19 +17,66 @@ import {
 import { Menu, X, BookOpen, Award, Home, LogOut, User, Trophy, ShoppingCart } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
+import { toast } from "sonner"
 
-interface NavbarProps {
-  isLoggedIn?: boolean
-}
-
-export function Navbar({ isLoggedIn = false }: NavbarProps) {
+export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    // Check if user is logged in by looking for token
+    const token = localStorage.getItem('token')
+    setIsLoggedIn(!!token)
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_AUTH_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL not configured');
+      }
+
+      // Call logout endpoint
+      const response = await fetch(`${apiUrl}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+
+      // Clear frontend state
+      localStorage.removeItem('token');
+      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      setIsLoggedIn(false);
+      
+      toast.success("Logged out successfully");
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error("Failed to logout. Please try again.");
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/images/logo.png" alt="Mentora Logo" width={40} height={40} className="rounded-md" />
+          <div className="relative w-10 h-10">
+            <Image 
+              src="/images/logo.png" 
+              alt="Mentora Logo" 
+              fill
+              sizes="(max-width: 768px) 40px, 40px"
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+          </div>
           <span className="text-xl font-bold">MENTORA</span>
         </Link>
 
@@ -57,6 +105,11 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
           {isLoggedIn && (
             <Link href="/shop" className="text-sm font-medium hover:text-primary/90 transition-colors">
               Shop
+            </Link>
+          )}
+          {isLoggedIn && (
+            <Link href="/users" className="text-sm font-medium hover:text-primary/90 transition-colors">
+              Users
             </Link>
           )}
         </nav>
@@ -112,8 +165,17 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
                     <span>Shop</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/users" className="flex items-center gap-2 cursor-pointer">
+                    <User className="h-4 w-4" />
+                    <span>Users</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <DropdownMenuItem 
+                  className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600"
+                  onClick={handleLogout}
+                >
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -189,6 +251,28 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
                 <ShoppingCart className="h-4 w-4" />
                 <span>Shop</span>
               </Link>
+            )}
+            {isLoggedIn && (
+              <Link
+                href="/users"
+                className="flex items-center gap-2 text-sm font-medium hover:text-primary/90 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User className="h-4 w-4" />
+                <span>Users</span>
+              </Link>
+            )}
+            {isLoggedIn && (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center gap-2 text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
             )}
           </nav>
         </div>
