@@ -37,7 +37,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
-export const BASE_URL = "http://localhost:3001"
+export const BASE_URL = process.env.NEXT_PUBLIC_AUTH_API_URL
 
 
 interface User {
@@ -79,8 +79,8 @@ export default function AdminDashboard() {
   }, [])
 
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   )
 
   const getRoleBadgeColor = (role: string) => {

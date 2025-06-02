@@ -30,7 +30,7 @@ export default function LeaderboardPage() {
       return
     }
 
-    fetch(`http://localhost:3009/leaderboard`)
+    fetch(`${apiUrl}/leaderboard`)
       .then((res) => res.json())
       .then((data) => {
         setPlayers(data)
@@ -49,7 +49,7 @@ export default function LeaderboardPage() {
     
     if (!apiUrl) return
 
-    const eventSource = new EventSource(`http://localhost:3009/leaderboard/stream`)
+    const eventSource = new EventSource(`${apiUrl}/leaderboard/stream`)
 
     eventSource.addEventListener('leaderboardUpdate', (event: MessageEvent) => {
       const updated = JSON.parse(event.data)

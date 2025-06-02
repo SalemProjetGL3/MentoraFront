@@ -26,7 +26,7 @@ import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { Course, Module, Lesson } from "@/app/courses/types/course"
 
-export const BASE_URL = "http://localhost:3003"
+export const BASE_URL = process.env.NEXT_PUBLIC_COURSE_API_URL
 
 export default function AddCoursePage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -145,6 +145,7 @@ export default function AddCoursePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(courseData),
+        // credentials: 'include'
       })
 
       if (!response.ok) {

@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, X, BookOpen, Award, Home, LogOut, User, Trophy, ShoppingCart } from "lucide-react"
+import { Menu, X, BookOpen, Award, Home, LogOut, User, Trophy, ShoppingCart, Settings } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { toast } from "sonner"
@@ -22,12 +22,17 @@ import { toast } from "sonner"
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     // Check if user is logged in by looking for token
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
+    
+    // Check if user is admin
+    const userRole = localStorage.getItem('userRole')
+    setIsAdmin(userRole === 'admin')
   }, [])
 
   const handleLogout = async () => {
@@ -107,6 +112,11 @@ export function Navbar() {
               Shop
             </Link>
           )}
+          {isAdmin && (
+            <Link href="/admin" className="text-sm font-medium hover:text-primary/90 transition-colors">
+              Admin Panel
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -160,6 +170,17 @@ export function Navbar() {
                     <span>Shop</span>
                   </Link>
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                        <Settings className="h-4 w-4" />
+                        <span>Admin Panel</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600"
@@ -239,6 +260,16 @@ export function Navbar() {
               >
                 <ShoppingCart className="h-4 w-4" />
                 <span>Shop</span>
+              </Link>
+            )}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 text-sm font-medium hover:text-primary/90 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Settings className="h-4 w-4" />
+                <span>Admin Panel</span>
               </Link>
             )}
             {isLoggedIn && (

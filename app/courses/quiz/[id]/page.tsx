@@ -141,7 +141,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         selectedAnswerIds
       }))
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/${quiz._id}/submit`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_QUIZ_API_URL}/quizzes/${quiz._id}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

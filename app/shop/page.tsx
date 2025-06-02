@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Star, Crown, Sparkles, Gift, ShoppingCart } from "lucide-react"
 
-
+export const BASE_URL = process.env.NEXT_PUBLIC_LEADERBOARD_API_URL
 
 export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -19,12 +19,12 @@ export default function ShopPage() {
   >([]);
 const handlePurchase = async (itemId: number) => {
   try {
-    const response = await fetch(`http://localhost:3009/shop/buy/${itemId}`, {
+    const response = await fetch(`${BASE_URL}/shop/buy/${itemId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId: 3 }),
+      body: JSON.stringify({ userId: 3 })
     });
 
     const result = await response.json();
@@ -38,7 +38,7 @@ const handlePurchase = async (itemId: number) => {
     setOwnedItems((prev) => [...prev, itemId]);
 
     // Optionally refresh user points
-    fetch("http://localhost:3009/points/3")
+    fetch(`${BASE_URL}/points/3`)
       .then((res) => res.json())
       .then((data) => setUserPoints(data.currentPoints));
   } catch (err: any) {
@@ -48,7 +48,7 @@ const handlePurchase = async (itemId: number) => {
 };
 
   useEffect(() => {
-    fetch('http://localhost:3009/shop/user/3')
+    fetch(`${BASE_URL}/shop/user/3`)
       .then((res) => res.json())
       .then((data) => {
         setOwnedItems(data.ownedItems);
@@ -57,7 +57,7 @@ const handlePurchase = async (itemId: number) => {
       .catch((err) => console.error('Failed to fetch owned items:', err));
   }, []);
   useEffect(() =>{
-    fetch('http://localhost:3009/points/3')
+    fetch(`${BASE_URL}/points/3`)
     .then((res) => res.json())
     .then((data) => {
       setUserPoints(data.currentPoints)
@@ -65,7 +65,7 @@ const handlePurchase = async (itemId: number) => {
     .catch((err) => console.error('Failed to fetch user points:', err));
   }, [])
   useEffect(() => {
-    fetch('http://localhost:3009/shop')
+    fetch(`${BASE_URL}/shop`)
       .then((res) => res.json())
       .then((data) => {
         console.log(data)

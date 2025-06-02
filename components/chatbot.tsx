@@ -144,26 +144,26 @@ export function Chatbot() {
                 <div key={index} className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}>
                   <div
                     className={`max-w-[80%] rounded-lg px-3 py-2 ${
-                      message.isUser ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      message.isUser ? "bg-primary text-primary-foreground" : "bg-muted text-white"
                     }`}
                   >
                     {message.isUser ? (
                       <p className="text-sm">{message.text}</p>
                     ) : (
-                      <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                      <div className="text-sm prose prose-sm dark:prose-invert max-w-none text-white">
                         <ReactMarkdown
                           components={{
-                            p: ({ children }) => <p className="mb-4">{children}</p>,
-                            ul: ({ children }) => <ul className="list-disc pl-6 mb-4">{children}</ul>,
-                            ol: ({ children }) => <ol className="list-decimal pl-6 mb-4">{children}</ol>,
-                            li: ({ children }) => <li className="mb-2">{children}</li>,
-                            strong: ({ children }) => <strong className="font-bold">{children}</strong>,
-                            em: ({ children }) => <em className="italic">{children}</em>,
-                            h1: ({ children }) => <h1 className="text-xl font-bold mb-4">{children}</h1>,
-                            h2: ({ children }) => <h2 className="text-lg font-bold mb-3">{children}</h2>,
-                            h3: ({ children }) => <h3 className="text-base font-bold mb-2">{children}</h3>,
-                            code: ({ children }) => <code className="bg-muted px-1 rounded">{children}</code>,
-                            pre: ({ children }) => <pre className="bg-muted p-2 rounded mb-4 overflow-x-auto">{children}</pre>,
+                            p: ({ children }) => <p className="mb-4 text-white">{children}</p>,
+                            ul: ({ children }) => <ul className="list-disc pl-6 mb-4 text-white">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 text-white">{children}</ol>,
+                            li: ({ children }) => <li className="mb-2 text-white">{children}</li>,
+                            strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+                            em: ({ children }) => <em className="italic text-white">{children}</em>,
+                            h1: ({ children }) => <h1 className="text-xl font-bold mb-4 text-white">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-lg font-bold mb-3 text-white">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-base font-bold mb-2 text-white">{children}</h3>,
+                            code: ({ children }) => <code className="bg-muted px-1 rounded text-white">{children}</code>,
+                            pre: ({ children }) => <pre className="bg-muted p-2 rounded mb-4 overflow-x-auto text-white">{children}</pre>,
                           }}
                         >
                           {message.text}
