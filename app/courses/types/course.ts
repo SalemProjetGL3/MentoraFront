@@ -2,13 +2,14 @@ export interface Lesson {
   id: number;
   title: string;
   content?: string;
-  type: 'video' | 'text' | 'code' | 'quiz';
+  type: 'video' | 'text' | 'image' | 'quiz';
   description?: string;
   duration: string;
   images?: string[];
   videoUrl?: string;
   quizId?: string;
   completed: boolean;
+  order: number;
 }
 
 export interface Module { 

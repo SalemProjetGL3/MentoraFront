@@ -1,7 +1,7 @@
 // app/courses/quiz/[id]/page.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -48,8 +48,8 @@ interface QuizSubmission {
   }[]
 }
 
-export default function QuizPage({ params }: { params: { id: string } }) {
-  const { id: quizId } = params // Destructure the quizId from params
+export default function QuizPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: quizId } = use(params)
   
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
@@ -70,7 +70,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
       }
       try {
         // Use the quizId from the URL parameters
-        const response = await fetch(`http://localhost:3000/quizzes/${quizId}?populate=true`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_QUIZ_API_URL}/quizzes/${quizId}?populate=true`)
         if (!response.ok) {
           // Check for 404 specifically
           if (response.status === 404) {
@@ -141,7 +141,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
         selectedAnswerIds
       }))
 
-      const response = await fetch(`http://localhost:3000/quizzes/${quiz._id}/submit`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/${quiz._id}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

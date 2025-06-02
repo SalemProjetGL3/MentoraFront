@@ -1,0 +1,43 @@
+.lessonContent {
+  @apply space-y-6;
+}
+
+.lessonContent h2 {
+  @apply text-2xl font-bold mt-8 mb-4;
+}
+
+.lessonContent h3 {
+  @apply text-xl font-semibold mt-6 mb-3;
+}
+
+.lessonContent p {
+  @apply text-base leading-relaxed mb-4;
+}
+
+.lessonContent ul {
+  @apply list-disc list-inside space-y-2 mb-4;
+}
+
+.lessonContent pre {
+  @apply bg-muted p-4 rounded-lg overflow-x-auto my-4;
+}
+
+.lessonContent code {
+  @apply font-mono text-sm;
+}
+
+.lessonContent pre code {
+  @apply block;
+}
+
+.lessonContent strong {
+  @apply font-semibold;
+}
+
+.lessonContent a {
+  @apply text-primary hover:underline;
+}
+
+.lessonContent img {
+  @apply max-w-full h-auto rounded-lg my-4;
+} 

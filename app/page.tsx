@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { BookOpen, Award, CheckCircle, Code, Video, FileText } from "lucide-react"
+import Image from "next/image"
 
 export default function Home() {
   const router = useRouter()
@@ -41,7 +42,7 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                    {isLoggedIn ? `Welcome back, ${userName}!` : 'Learn Web Frameworks Interactively'}
+                    {isLoggedIn ? `Welcome back, ${userName}!` : <><span className="whitespace-nowrap">Learn Web Frameworks</span> <br/> Interactively</>}
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
                     {isLoggedIn 
@@ -86,6 +87,14 @@ export default function Home() {
                     </>
                   )}
                 </div>
+              </div>
+              <div className="relative hidden lg:block w-full h-full min-h-[300px] flex items-center justify-center animate-float">
+                <Image
+                  src="/images/xs logo.png"
+                  alt="Web Frameworks Illustration"
+                  fill
+                  className="object-contain rounded-full"
+                />
               </div>
             </div>
           </div>
