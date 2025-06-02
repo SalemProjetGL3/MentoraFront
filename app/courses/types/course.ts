@@ -9,6 +9,7 @@ export interface Lesson {
   videoUrl?: string;
   quizId?: string;
   completed: boolean;
+  order: number;
 }
 
 export interface Module { 
