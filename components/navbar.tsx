@@ -121,6 +121,11 @@ export function Navbar() {
               Shop
             </Link>
           )}
+          {isLoggedIn && (
+            <Link href="/users" className="text-sm font-medium hover:text-primary/90 transition-colors">
+              Users
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -131,7 +136,7 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/avatars/user-placeholder.png" alt={user.username || "User"} />
+                    <AvatarImage src="/placeholder.svg" alt={user.username || "User"} />
                     <AvatarFallback>{user.username ? user.username.charAt(0).toUpperCase() : "U"}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -139,8 +144,12 @@ export function Navbar() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">User</p>
-                    <p className="text-xs leading-none text-muted-foreground">user@example.com</p>
+                    <p className="text-sm font-medium leading-none">
+                      {user.username || "User"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email || "user@example.com"}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -176,10 +185,18 @@ export function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/users" className="flex items-center gap-2 cursor-pointer">
-                    <User className="h-4 w-4" />
+                    <UserIcon className="mr-2 h-4 w-4" />
                     <span>Users</span>
                   </Link>
                 </DropdownMenuItem>
+                {user.role === 'ADMIN' && ( // Conditionally show Admin link
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                      <Users className="mr-2 h-4 w-4" /> {/* Or a more specific admin icon */}
+                      <span>Admin Panel</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600"
@@ -267,7 +284,7 @@ export function Navbar() {
                 className="flex items-center gap-2 text-sm font-medium hover:text-primary/90 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <User className="h-4 w-4" />
+                <UserIcon className="h-4 w-4" />
                 <span>Users</span>
               </Link>
             )}
