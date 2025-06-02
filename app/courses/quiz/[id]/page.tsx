@@ -70,7 +70,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
       }
       try {
         // Use the quizId from the URL parameters
-        const response = await fetch(`http://localhost:3000/quizzes/${quizId}?populate=true`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_QUIZ_API_URL}/quizzes/${quizId}?populate=true`)
         if (!response.ok) {
           // Check for 404 specifically
           if (response.status === 404) {
@@ -141,7 +141,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         selectedAnswerIds
       }))
 
-      const response = await fetch(`http://localhost:3000/quizzes/${quiz._id}/submit`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/${quiz._id}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
