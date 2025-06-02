@@ -83,7 +83,7 @@ export function LoginForm({ onLoadingChange }: LoginFormProps) {
           return;
         }
         else if (data.token) {
-          localStorage.setItem('token', 'true');
+          localStorage.setItem('token', data.token);
           await router.push("/courses");
         }
       } else {

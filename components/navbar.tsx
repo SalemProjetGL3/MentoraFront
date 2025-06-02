@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from 'react';
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { api, UserProfile } from '@/lib/api'; // Adjust path if necessary
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Assuming you use Shadcn UI
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,21 +15,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, X, BookOpen, Award, Home, LogOut, User, Trophy, ShoppingCart } from "lucide-react"
+import { Menu, X, BookOpen, Award, Home, LogOut, User as UserIcon, Trophy, ShoppingCart, Users, BarChart3 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { toast } from "sonner"
 
 export function Navbar() {
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is logged in by looking for token
-    const token = localStorage.getItem('token')
-    setIsLoggedIn(!!token)
-  }, [])
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+    if (token) {
+      api.getUserProfile()
+        .then(setUser)
+        .catch(error => {
+          console.error("Failed to fetch user profile:", error);
+          // Potentially handle token expiration or other errors by logging out
+          // localStorage.removeItem('token');
+          // setIsLoggedIn(false);
+          // setUser(null);
+          // router.push('/login');
+        });
+    }
+  }, [router]); // Add router to dependency array if used in effect for logout
 
   const handleLogout = async () => {
     try {
@@ -54,6 +67,7 @@ export function Navbar() {
       localStorage.removeItem('token');
       document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       setIsLoggedIn(false);
+      setUser(null);
       
       toast.success("Logged out successfully");
       router.push('/');
@@ -117,66 +131,78 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <LanguageToggle />
           <ThemeToggle />
-          {isLoggedIn ? (
+          {isLoggedIn && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg" alt="User" />
-                    <AvatarFallback>UN</AvatarFallback>
+                    <AvatarImage src="/placeholder.svg" alt={user.username || "User"} />
+                    <AvatarFallback>{user.username ? user.username.charAt(0).toUpperCase() : "U"}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">User</p>
-                    <p className="text-xs leading-none text-muted-foreground">user@example.com</p>
+                    <p className="text-sm font-medium leading-none">
+                      {user.username || "User"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email || "user@example.com"}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
-                    <User className="h-4 w-4" />
+                    <UserIcon className="mr-2 h-4 w-4" />
                     <span>My Profile</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/my-courses" className="flex items-center gap-2 cursor-pointer">
-                    <BookOpen className="h-4 w-4" />
+                  <Link href="/courses" className="flex items-center gap-2 cursor-pointer">
+                    <BookOpen className="mr-2 h-4 w-4" />
                     <span>My Courses</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/badges" className="flex items-center gap-2 cursor-pointer">
-                    <Award className="h-4 w-4" />
+                    <Award className="mr-2 h-4 w-4" />
                     <span>Badges</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/leaderboard" className="flex items-center gap-2 cursor-pointer">
-                    <Trophy className="h-4 w-4" />
+                    <Trophy className="mr-2 h-4 w-4" />
                     <span>Leaderboard</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/shop" className="flex items-center gap-2 cursor-pointer">
-                    <ShoppingCart className="h-4 w-4" />
+                    <ShoppingCart className="mr-2 h-4 w-4" />
                     <span>Shop</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/users" className="flex items-center gap-2 cursor-pointer">
-                    <User className="h-4 w-4" />
+                    <UserIcon className="mr-2 h-4 w-4" />
                     <span>Users</span>
                   </Link>
                 </DropdownMenuItem>
+                {user.role === 'ADMIN' && ( // Conditionally show Admin link
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                      <Users className="mr-2 h-4 w-4" /> {/* Or a more specific admin icon */}
+                      <span>Admin Panel</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600"
                   onClick={handleLogout}
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -258,7 +284,7 @@ export function Navbar() {
                 className="flex items-center gap-2 text-sm font-medium hover:text-primary/90 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <User className="h-4 w-4" />
+                <UserIcon className="h-4 w-4" />
                 <span>Users</span>
               </Link>
             )}
