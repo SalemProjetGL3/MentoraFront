@@ -1,32 +1,50 @@
+// lib/api.ts
+
 import { GraphQLClient } from 'graphql-request';
 
-const USER_SERVICE_API_URL = process.env.NEXT_PUBLIC_USER_SERVICE_API_URL + "/graphql";
+function getGraphqlClient() {
+  const token = localStorage.getItem('token');
 
-const graphqlClient = new GraphQLClient(USER_SERVICE_API_URL, {
-  headers: {
-    'Content-Type': 'application/json',
- 
-  },
-});
+  return new GraphQLClient(
+    process.env.NEXT_PUBLIC_USER_SERVICE_API_URL || 'http://localhost:3002/graphql',
+    {
+      fetch: (url, options) => {
+        // Ensure options.headers is safely spread and the new header is added
+        const newHeaders = {
+          ...options?.headers, // Start with headers provided by graphql-request
+          'Authorization': token ? `Bearer ${token}` : '',
+          'apollo-require-preflight': '1', // Ensure this is always sent for CSRF
+          'Content-Type': 'application/json', // <--- Set Content-Type explicitly and last
+        };
+
+        return fetch(url, {
+          ...options,
+          credentials: 'include',
+          headers: newHeaders, // Use the carefully constructed newHeaders
+        });
+      }
+    }
+  );
+}
 
 export interface UserProfile {
-  id: string; 
+  id: number;
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  bio: string;
-  jobTitle: string;
-  company: string;
+  firstName: string | null;
+  lastName: string | null;
+  bio: string | null;
+  jobTitle: string | null;
+  company: string | null;
   isVerified: boolean;
   role: string;
-  enrolledCourseIds: string[];
+  enrolledCourseIds: string[] | null;
 }
 
 export const api = {
   async getUserProfile(): Promise<UserProfile> {
     const query = `
-      query {
+      query GetUserProfile { 
         me {
           id
           username
@@ -36,21 +54,20 @@ export const api = {
           bio
           jobTitle
           company
+          isVerified
           role
           enrolledCourseIds
         }
       }
     `;
-    const { me } = await graphqlClient.request<{ me: UserProfile }>(query);
+    const client = getGraphqlClient();
+    const { me } = await client.request<{ me: UserProfile }>(query);
     return me;
-
-
   },
 
   async updateUserProfile(data: Partial<UserProfile> & { id: string }): Promise<UserProfile> {
-
     const mutation = `
-      mutation UpdateUser($updateUserInput: UpdateUserInput!) {
+      mutation UpdateUser($updateUserInput: UpdateUserInput!) { 
         updateUser(updateUserInput: $updateUserInput) {
           id
           username
@@ -60,18 +77,16 @@ export const api = {
           bio
           jobTitle
           company
+          isVerified
           role
           enrolledCourseIds
         }
       }
     `;
-
-
-    const { updateUser } = await graphqlClient.request<{ updateUser: UserProfile }>(mutation, {
+    const client = getGraphqlClient();
+    const { updateUser } = await client.request<{ updateUser: UserProfile }>(mutation, {
       updateUserInput: data,
     });
     return updateUser;
   },
-
-
-  }
+};

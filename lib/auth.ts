@@ -1,16 +1,16 @@
 import { cookies } from 'next/headers'
 
-export function getAuthToken() {
-  const cookieStore = cookies()
+export async function getAuthToken() {
+  const cookieStore = await cookies()
   return cookieStore.get('token')?.value
 }
 
-export function isAuthenticated() {
-  return !!getAuthToken()
+export async function isAuthenticated() {
+  return !!(await getAuthToken())
 }
 
-export function requireAuth() {
-  const token = getAuthToken()
+export async function requireAuth() {
+  const token = await getAuthToken()
   if (!token) {
     throw new Error('Authentication required')
   }

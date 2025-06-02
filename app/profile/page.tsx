@@ -36,7 +36,10 @@ const handleSubmit = async (e: React.FormEvent) => {
   setIsLoading(true)
   try {
     if (formProfile.id) { 
-      const updated = await api.updateUserProfile(formProfile as UserProfile)
+      const updated = await api.updateUserProfile({
+        ...formProfile,
+        id: String(formProfile.id),
+      } as Partial<UserProfile> & { id: string })
       setProfile(updated)       
       setFormProfile(updated)   
     }
