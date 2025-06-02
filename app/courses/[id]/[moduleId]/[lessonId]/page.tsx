@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -9,16 +9,19 @@ import { Chatbot } from "@/components/chatbot"
 import { Course, Lesson, Module } from "@/app/courses/types/course"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import ReactMarkdown from "react-markdown"
+import DOMPurify from 'dompurify'
+import styles from './lesson-content.module.css'
 
 interface LessonPageProps {
-  params: {
+  params: Promise<{
     id: string
     moduleId: string
     lessonId: string
-  }
+  }>
 }
 
 export default function LessonPage({ params }: LessonPageProps) {
+  const { id, moduleId, lessonId } = use(params)
   const [course, setCourse] = useState<Course | null>(null)
   const [currentModule, setCurrentModule] = useState<Module | null>(null)
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null)
@@ -29,57 +32,79 @@ export default function LessonPage({ params }: LessonPageProps) {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const res = await fetch(`http://localhost:3003/courses/${params.id}`)
+        console.log('Fetching course data for ID:', id)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_COURSE_API_URL}/courses/${id}`, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+        
         const courseData = await res.json()
+        console.log('Course data received:', courseData)
         setCourse(courseData)
 
-        const module = courseData.modules.find((m: Module) => m.id.toString() === params.moduleId)
+        const module = courseData.modules.find((m: Module) => m.id.toString() === moduleId)
+        console.log('Found module:', module)
         setCurrentModule(module || null)
 
         if (module) {
-          const lesson = module.lessons.find((l: Lesson) => l.id.toString() === params.lessonId)
+          const lesson = module.lessons.find((l: Lesson) => l.id.toString() === lessonId)
+          console.log('Found lesson:', lesson)
           setCurrentLesson(lesson || null)
         }
 
         setError(null)
       } catch (err) {
+        console.error('Error fetching lesson:', err)
         setError('Failed to fetch lesson data')
-        console.error(err)
       } finally {
         setLoading(false)
       }
     }
 
     fetchData()
-  }, [params.id, params.moduleId, params.lessonId])
+  }, [id, moduleId, lessonId])
 
   const navigateToLesson = (direction: 'prev' | 'next') => {
-    if (!course || !currentModule || !currentLesson) return
+    if (!course || !currentModule || !currentLesson) {
+      console.log('Cannot navigate: missing course data', { course, currentModule, currentLesson })
+      return
+    }
 
-    const currentModuleIndex = course.modules.findIndex(m => m.id.toString() === params.moduleId)
-    const currentLessonIndex = currentModule.lessons.findIndex(l => l.id.toString() === params.lessonId)
+    const currentModuleIndex = course.modules.findIndex(m => m.id.toString() === moduleId)
+    const currentLessonIndex = currentModule.lessons.findIndex(l => l.id.toString() === lessonId)
+    console.log('Navigation indices:', { currentModuleIndex, currentLessonIndex })
 
     if (direction === 'next') {
       if (currentLessonIndex < currentModule.lessons.length - 1) {
         // Next lesson in same module
         const nextLesson = currentModule.lessons[currentLessonIndex + 1]
-        window.location.href = `/courses/${params.id}/${params.moduleId}/${nextLesson.id}`
+        console.log('Navigating to next lesson in same module:', nextLesson)
+        window.location.href = `/courses/${id}/${moduleId}/${nextLesson.id}`
       } else if (currentModuleIndex < course.modules.length - 1) {
         // First lesson of next module
         const nextModule = course.modules[currentModuleIndex + 1]
         const firstLesson = nextModule.lessons[0]
-        window.location.href = `/courses/${params.id}/${nextModule.id}/${firstLesson.id}`
+        console.log('Navigating to first lesson of next module:', { nextModule, firstLesson })
+        window.location.href = `/courses/${id}/${nextModule.id}/${firstLesson.id}`
       }
     } else {
       if (currentLessonIndex > 0) {
         // Previous lesson in same module
         const prevLesson = currentModule.lessons[currentLessonIndex - 1]
-        window.location.href = `/courses/${params.id}/${params.moduleId}/${prevLesson.id}`
+        console.log('Navigating to previous lesson in same module:', prevLesson)
+        window.location.href = `/courses/${id}/${moduleId}/${prevLesson.id}`
       } else if (currentModuleIndex > 0) {
         // Last lesson of previous module
         const prevModule = course.modules[currentModuleIndex - 1]
         const lastLesson = prevModule.lessons[prevModule.lessons.length - 1]
-        window.location.href = `/courses/${params.id}/${prevModule.id}/${lastLesson.id}`
+        console.log('Navigating to last lesson of previous module:', { prevModule, lastLesson })
+        window.location.href = `/courses/${id}/${prevModule.id}/${lastLesson.id}`
       }
     }
   }
@@ -98,7 +123,7 @@ export default function LessonPage({ params }: LessonPageProps) {
         <div className="text-center">
           <p className="text-red-500 mb-4">{error || 'Lesson not found'}</p>
           <Button asChild variant="outline">
-            <Link href={`/courses/${params.id}`}>Return to Course</Link>
+            <Link href={`/courses/${id}`}>Return to Course</Link>
           </Button>
         </div>
       </div>
@@ -106,23 +131,53 @@ export default function LessonPage({ params }: LessonPageProps) {
   }
 
   const renderLessonContent = () => {
-    switch (currentLesson.type) {
+    console.log('Rendering lesson content:', { type: currentLesson?.type, content: currentLesson?.content })
+    switch (currentLesson?.type) {
       case 'video':
+        console.log('Rendering video lesson:', currentLesson.videoUrl)
+        // Extract video ID from YouTube URL
+        const getYoutubeEmbedUrl = (url: string) => {
+          const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+          const match = url.match(regExp)
+          const videoId = (match && match[2].length === 11) ? match[2] : null
+          return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+        }
+
+        if (!currentLesson.videoUrl) {
+          console.error('No video URL provided')
+          return <div className="text-red-500">No video URL provided</div>
+        }
+
+        const embedUrl = getYoutubeEmbedUrl(currentLesson.videoUrl)
+        console.log('YouTube embed URL:', embedUrl)
+
+        if (!embedUrl) {
+          console.error('Invalid YouTube URL:', currentLesson.videoUrl)
+          return <div className="text-red-500">Invalid video URL</div>
+        }
+
         return (
           <div className="aspect-video rounded-lg overflow-hidden bg-black">
             <iframe
-              src={currentLesson.videoUrl}
+              src={embedUrl}
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              title={currentLesson.title}
             />
           </div>
         )
       
       case 'text':
+        console.log('Rendering text lesson with content length:', currentLesson.content?.length)
         return (
           <div className="prose prose-invert max-w-none">
-            <ReactMarkdown>{currentLesson.content || ''}</ReactMarkdown>
+            <div 
+              className={styles.lessonContent}
+              dangerouslySetInnerHTML={{ 
+                __html: DOMPurify.sanitize(currentLesson.content || '') 
+              }} 
+            />
           </div>
         )
       
@@ -179,7 +234,7 @@ export default function LessonPage({ params }: LessonPageProps) {
       <main className="flex-1 container py-8">
         <div className="flex items-center justify-between mb-8">
           <Link
-            href={`/courses/${params.id}`}
+            href={`/courses/${id}`}
             className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -203,8 +258,8 @@ export default function LessonPage({ params }: LessonPageProps) {
                 variant="outline"
                 onClick={() => navigateToLesson('prev')}
                 disabled={
-                  params.moduleId === course?.modules[0].id.toString() &&
-                  params.lessonId === currentModule?.lessons[0].id.toString()
+                  moduleId === course?.modules[0].id.toString() &&
+                  lessonId === currentModule?.lessons[0].id.toString()
                 }
               >
                 <ChevronLeft className="h-4 w-4 mr-2" />
@@ -213,8 +268,8 @@ export default function LessonPage({ params }: LessonPageProps) {
               <Button
                 onClick={() => navigateToLesson('next')}
                 disabled={
-                  params.moduleId === course?.modules[course.modules.length - 1].id.toString() &&
-                  params.lessonId === currentModule?.lessons[currentModule.lessons.length - 1].id.toString()
+                  moduleId === course?.modules[course.modules.length - 1].id.toString() &&
+                  lessonId === currentModule?.lessons[currentModule.lessons.length - 1].id.toString()
                 }
               >
                 Next Lesson
@@ -238,9 +293,9 @@ export default function LessonPage({ params }: LessonPageProps) {
                       {module.lessons.map((lesson) => (
                         <Link
                           key={lesson.id}
-                          href={`/courses/${params.id}/${module.id}/${lesson.id}`}
+                          href={`/courses/${id}/${module.id}/${lesson.id}`}
                           className={`block text-sm py-1 px-2 rounded ${
-                            lesson.id.toString() === params.lessonId
+                            lesson.id.toString() === lessonId
                               ? 'bg-primary/10 text-primary'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}

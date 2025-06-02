@@ -1,7 +1,7 @@
 // app/courses/quiz/[id]/page.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -48,8 +48,8 @@ interface QuizSubmission {
   }[]
 }
 
-export default function QuizPage({ params }: { params: { id: string } }) {
-  const { id: quizId } = params // Destructure the quizId from params
+export default function QuizPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: quizId } = use(params)
   
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)

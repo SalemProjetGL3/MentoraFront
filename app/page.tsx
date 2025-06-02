@@ -7,17 +7,41 @@ import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { BookOpen, Award, CheckCircle, Code, Video, FileText } from "lucide-react"
+import Image from "next/image"
 
 export default function Home() {
   const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userName] = useState("")
 
+  // Function to delete a specific user (example)
+  const deleteUser = async () => {
+    let response; // Declare response outside the try block
+    try {
+      response = await fetch('http://localhost:3000/users/delete/selma.sghaier%40insat.ucar.tn');
+      if (response.ok) {
+        console.log('User deleted successfully');
+        // You might want to add some UI feedback here, like a success message
+      } else {
+        console.error('Failed to delete user:', response.statusText);
+        // Handle errors, e.g., show an error message to the user
+      }
+    } catch (error) {
+      console.error('Error during user deletion:', error);
+      // Handle network errors
+    }
+  };
+
   useEffect(() => {
     // Check if user is logged in by looking for token
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
   }, [])
+
+  useEffect(() => {
+    // Call the deleteUser function when the component mounts
+    deleteUser();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleLogin = () => {
     console.log('Navigating to login page...')
@@ -41,7 +65,7 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                    {isLoggedIn ? `Welcome back, ${userName}!` : 'Learn Web Frameworks Interactively'}
+                    {isLoggedIn ? `Welcome back, ${userName}!` : <><span className="whitespace-nowrap">Learn Web Frameworks</span> <br/> Interactively</>}
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
                     {isLoggedIn 
@@ -86,6 +110,14 @@ export default function Home() {
                     </>
                   )}
                 </div>
+              </div>
+              <div className="relative hidden lg:block w-full h-full min-h-[300px] flex items-center justify-center animate-float">
+                <Image
+                  src="/images/xs logo.png"
+                  alt="Web Frameworks Illustration"
+                  fill
+                  className="object-contain rounded-full"
+                />
               </div>
             </div>
           </div>

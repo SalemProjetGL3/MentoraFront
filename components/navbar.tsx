@@ -107,11 +107,6 @@ export function Navbar() {
               Shop
             </Link>
           )}
-          {isLoggedIn && (
-            <Link href="/users" className="text-sm font-medium hover:text-primary/90 transition-colors">
-              Users
-            </Link>
-          )}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -122,7 +117,7 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg" alt="User" />
+                    <AvatarImage src="/avatars/user-placeholder.png" alt="User" />
                     <AvatarFallback>UN</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -130,8 +125,8 @@ export function Navbar() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">User</p>
-                    <p className="text-xs leading-none text-muted-foreground">user@example.com</p>
+                    <p className="text-sm font-medium leading-none">Selma</p>
+                    <p className="text-xs leading-none text-muted-foreground">selma.sghaier@insat.ucar.tn</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -163,12 +158,6 @@ export function Navbar() {
                   <Link href="/shop" className="flex items-center gap-2 cursor-pointer">
                     <ShoppingCart className="h-4 w-4" />
                     <span>Shop</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/users" className="flex items-center gap-2 cursor-pointer">
-                    <User className="h-4 w-4" />
-                    <span>Users</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -250,16 +239,6 @@ export function Navbar() {
               >
                 <ShoppingCart className="h-4 w-4" />
                 <span>Shop</span>
-              </Link>
-            )}
-            {isLoggedIn && (
-              <Link
-                href="/users"
-                className="flex items-center gap-2 text-sm font-medium hover:text-primary/90 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <User className="h-4 w-4" />
-                <span>Users</span>
               </Link>
             )}
             {isLoggedIn && (

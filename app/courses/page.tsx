@@ -157,7 +157,7 @@ export default function CoursesPage() {
                     className={`course-card flex flex-col rounded-lg border bg-card shadow-sm hover:border-mentora-${course.color}`}
                   >
                     <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
-                      {/* <Image src={course.image || "/placeholder.svg"} alt={course.title} fill className="object-cover" /> */}
+                      <Image src={`/${course.image}`} alt={course.title} fill className="object-cover" />
                       <div
                         className={`absolute top-2 right-2 text-xs font-medium px-2.5 py-0.5 rounded-full bg-mentora-${course.color}/20 text-mentora-${course.color}`}
                       >
@@ -196,20 +196,8 @@ export default function CoursesPage() {
 
           <div className="flex justify-center mt-10">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" disabled>
-                &lt;
-              </Button>
               <Button variant="default" size="icon" className="bg-mentora-blue hover:bg-mentora-blue/90">
                 1
-              </Button>
-              <Button variant="outline" size="icon">
-                2
-              </Button>
-              <Button variant="outline" size="icon">
-                3
-              </Button>
-              <Button variant="outline" size="icon">
-                &gt;
               </Button>
             </div>
           </div>
