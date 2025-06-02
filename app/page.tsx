@@ -14,34 +14,11 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userName] = useState("")
 
-  // Function to delete a specific user (example)
-  const deleteUser = async () => {
-    let response; // Declare response outside the try block
-    try {
-      response = await fetch('http://localhost:3000/users/delete/selma.sghaier%40insat.ucar.tn');
-      if (response.ok) {
-        console.log('User deleted successfully');
-        // You might want to add some UI feedback here, like a success message
-      } else {
-        console.error('Failed to delete user:', response.statusText);
-        // Handle errors, e.g., show an error message to the user
-      }
-    } catch (error) {
-      console.error('Error during user deletion:', error);
-      // Handle network errors
-    }
-  };
-
   useEffect(() => {
     // Check if user is logged in by looking for token
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
   }, [])
-
-  useEffect(() => {
-    // Call the deleteUser function when the component mounts
-    deleteUser();
-  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleLogin = () => {
     console.log('Navigating to login page...')
