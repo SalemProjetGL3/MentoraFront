@@ -33,16 +33,18 @@ export function Navbar() {
     if (token) {
       api.getUserProfile()
         .then(setUser)
-        .catch(error => {
-          console.error("Failed to fetch user profile:", error);
-          // Potentially handle token expiration or other errors by logging out
-          // localStorage.removeItem('token');
-          // setIsLoggedIn(false);
-          // setUser(null);
-          // router.push('/login');
+        .catch((error: unknown) => {
+          console.warn("Failed to fetch user profile:", error);
+          // Handle unauthorized errors
+          if (error instanceof Error && error.message.includes('Unauthorized')) {
+            localStorage.removeItem('token');
+            setIsLoggedIn(false);
+            setUser(null);
+            router.push('/login');
+          }
         });
     }
-  }, [router]); // Add router to dependency array if used in effect for logout
+  }, [router]);
 
   const handleLogout = async () => {
     try {
@@ -102,7 +104,7 @@ export function Navbar() {
           <Link href="/courses" className="text-sm font-medium hover:text-primary/90 transition-colors">
             Courses
           </Link>
-          {isLoggedIn && (
+          {/*{isLoggedIn && (
             <Link href="/my-courses" className="text-sm font-medium hover:text-primary/90 transition-colors">
               My Courses
             </Link>
@@ -111,7 +113,7 @@ export function Navbar() {
             <Link href="/badges" className="text-sm font-medium hover:text-primary/90 transition-colors">
               Badges
             </Link>
-          )}
+          )}*/}
           {isLoggedIn && (
             <Link href="/leaderboard" className="text-sm font-medium hover:text-primary/90 transition-colors">
               Leaderboard
@@ -160,8 +162,8 @@ export function Navbar() {
                     <span>My Profile</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/courses" className="flex items-center gap-2 cursor-pointer">
+                {/*<DropdownMenuItem asChild>
+                   <Link href="/courses" className="flex items-center gap-2 cursor-pointer">
                     <BookOpen className="mr-2 h-4 w-4" />
                     <span>My Courses</span>
                   </Link>
@@ -171,7 +173,7 @@ export function Navbar() {
                     <Award className="mr-2 h-4 w-4" />
                     <span>Badges</span>
                   </Link>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem asChild>
                   <Link href="/leaderboard" className="flex items-center gap-2 cursor-pointer">
                     <Trophy className="mr-2 h-4 w-4" />

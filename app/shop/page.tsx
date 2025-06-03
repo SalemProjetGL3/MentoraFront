@@ -24,7 +24,7 @@ const handlePurchase = async (itemId: number) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ userId: 3 })
+      credentials: "include"
     });
 
     const result = await response.json();
@@ -35,10 +35,16 @@ const handlePurchase = async (itemId: number) => {
     }
 
     console.log("Purchase successful:", result);
-    setOwnedItems((prev) => [...prev, itemId]);
+    setOwnedItems((prev) => Array.isArray(prev) ? [...prev, itemId] : [itemId]);
 
     // Optionally refresh user points
-    fetch(`${BASE_URL}/points/3`)
+    fetch(`${BASE_URL}/points`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include"
+    })
       .then((res) => res.json())
       .then((data) => setUserPoints(data.currentPoints));
   } catch (err: any) {
@@ -48,16 +54,45 @@ const handlePurchase = async (itemId: number) => {
 };
 
   useEffect(() => {
-    fetch(`${BASE_URL}/shop/user/3`)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchUserInventory = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/shop/user`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch inventory');
+        }
+
+        const data = await response.json();
         setOwnedItems(data.ownedItems);
         console.log("Owned items:", data);
-      })
-      .catch((err) => console.error('Failed to fetch owned items:', err));
+      } catch (error: unknown) {
+        console.error('Failed to fetch owned items:', error);
+        // Handle unauthorized or invalid user ID cases
+        if (error instanceof Error && 
+            (error.message.includes('Unauthorized') || 
+             error.message.includes('Validation failed'))) {
+          setOwnedItems([]);
+        }
+      }
+    };
+
+    void fetchUserInventory();
   }, []);
   useEffect(() =>{
-    fetch(`${BASE_URL}/points/3`)
+    fetch(`${BASE_URL}/points`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include"
+    })
     .then((res) => res.json())
     .then((data) => {
       setUserPoints(data.currentPoints)
@@ -131,7 +166,6 @@ const handlePurchase = async (itemId: number) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {shopItems.map((item) => (
              <div key={item.itemId} className="border rounded-md bg-card shadow-sm p-4 flex flex-col items-center text-center">
-              <h1>{item.itemId}</h1>
               <img
                 src={item.imageUrl}
                 alt={item.name}
@@ -141,7 +175,7 @@ const handlePurchase = async (itemId: number) => {
               <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{item.description}</p>
               <div className="flex items-center justify-between w-full">
                 <span className="text-sm font-medium text-mentora-blue">{item.cost} pts</span>
-                {ownedItems.includes(item.itemId) ? (
+                {Array.isArray(ownedItems) && ownedItems.includes(item.itemId) ? (
                   <span className="text-xs text-green-500">Owned</span>
                 ) : (
                   <Button size="sm" onClick={() => handlePurchase(item.itemId)}>
