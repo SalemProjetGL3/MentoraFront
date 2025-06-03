@@ -18,6 +18,20 @@ export default function Home() {
     // Check if user is logged in by looking for token
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
+
+    // Only fetch user profile if token exists
+    if (token) {
+      // Add error handling for profile fetch
+      const fetchUserProfile = async () => {
+        try {
+          // Your existing profile fetch logic here
+          // If you have a getUserProfile function, wrap it in try-catch
+        } catch (error) {
+          console.warn('User profile fetch failed:', error)
+        }
+      }
+      fetchUserProfile()
+    }
   }, [])
 
   const handleLogin = () => {
@@ -93,6 +107,7 @@ export default function Home() {
                   src="/images/xs logo.png"
                   alt="Web Frameworks Illustration"
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-contain rounded-full"
                 />
               </div>

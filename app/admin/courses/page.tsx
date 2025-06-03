@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -25,8 +26,7 @@ import { toast } from "sonner"
 import { Navbar } from "@/components/navbar"
 import { Chatbot } from "@/components/chatbot"
 import { Course, Module, Lesson } from "@/app/courses/types/course"
-
-export const BASE_URL = process.env.NEXT_PUBLIC_COURSE_API_URL
+import { Quiz } from "@/app/courses/types/quiz"
 
 export default function AddCoursePage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -43,6 +43,32 @@ export default function AddCoursePage() {
     image: "",
     apercu: ""
   })
+
+  // NEW STATE FOR QUIZZES
+  const [availableQuizzes, setAvailableQuizzes] = useState<Quiz[]>([])
+  const [isQuizzesLoading, setIsQuizzesLoading] = useState(true) // Set to true to show loading initially
+  const [selectedQuizId, setSelectedQuizId] = useState<string>("") // State to hold selected quiz in the dropdown
+
+  // Fetch quizzes on component mount
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_QUIZ_API_URL}/quizzes`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch quizzes.");
+        }
+        const quizzes = await response.json();
+        setAvailableQuizzes(quizzes);
+      } catch (error) {
+        toast.error("Failed to load quizzes.");
+        console.error("Error fetching quizzes:", error);
+      } finally {
+        setIsQuizzesLoading(false);
+      }
+    };
+    fetchQuizzes();
+  }, []); // Empty dependency array means this runs once on mount
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -102,7 +128,7 @@ export default function AddCoursePage() {
         type: "text",
         duration: "00:00",
         completed: false,
-        order: newModules[moduleIndex].lessons.length + 1 
+        order: newModules[moduleIndex].lessons.length + 1
       })
       return { ...prev, modules: newModules }
     })
@@ -145,7 +171,6 @@ export default function AddCoursePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(courseData),
-        // credentials: 'include'
       })
 
       if (!response.ok) {
@@ -154,7 +179,7 @@ export default function AddCoursePage() {
       }
 
       toast.success("Course created successfully!")
-      
+
       // Reset form
       setCourseData({
         id: 0,
@@ -443,14 +468,37 @@ export default function AddCoursePage() {
 
                             {lesson.type === "quiz" && (
                               <div className="space-y-2">
-                                <Label>Quiz ID</Label>
-                                <Input
-                                  value={lesson.quizId || ""}
-                                  onChange={(e) =>
-                                    updateLesson(moduleIndex, lessonIndex, "quizId", e.target.value)
-                                  }
-                                  placeholder="Enter quiz ID"
-                                />
+                                <Label>Select Quiz</Label>
+                                {isQuizzesLoading ? (
+                                  <div className="flex items-center space-x-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Loading quizzes...</span>
+                                  </div>
+                                ) : (
+                                  <Select
+                                    value={lesson.quizId || ""}
+                                    onValueChange={(value) =>
+                                      updateLesson(moduleIndex, lessonIndex, "quizId", value)
+                                    }
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a quiz" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {availableQuizzes.length > 0 ? (
+                                        availableQuizzes.map((quiz) => (
+                                          <SelectItem key={quiz._id} value={String(quiz._id)}>
+                                            {quiz.title}
+                                          </SelectItem>
+                                        ))
+                                      ) : (
+                                        <SelectItem value="" disabled>
+                                          No quizzes available
+                                        </SelectItem>
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                )}
                               </div>
                             )}
 
@@ -484,9 +532,9 @@ export default function AddCoursePage() {
             </form>
           </CardContent>
           <CardFooter>
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               disabled={isLoading}
               onClick={handleSubmit}
             >
@@ -505,4 +553,4 @@ export default function AddCoursePage() {
       <Chatbot />
     </div>
   )
-} 
+}

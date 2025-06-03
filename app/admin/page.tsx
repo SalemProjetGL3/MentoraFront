@@ -37,7 +37,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
-export const BASE_URL = process.env.NEXT_PUBLIC_AUTH_API_URL
+export const BASE_URL = (process.env.NEXT_PUBLIC_AUTH_API_URL || '').replace('/auth', '')
 
 
 interface User {
