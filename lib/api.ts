@@ -36,7 +36,6 @@ export interface UserProfile {
   bio: string | null;
   jobTitle: string | null;
   company: string | null;
-  isVerified: boolean;
   role: string;
   enrolledCourseIds: string[] | null;
 }
@@ -54,7 +53,6 @@ export const api = {
           bio
           jobTitle
           company
-          isVerified
           role
           enrolledCourseIds
         }
